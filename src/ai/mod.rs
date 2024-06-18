@@ -1,8 +1,7 @@
 use bevy::prelude::*;
-use rs_openai::{
-    chat::{ChatCompletionMessageRequestBuilder, CreateChatRequestBuilder, Role},
-    OpenAI,
-};
+use rs_openai::OpenAI;
+
+mod persona;
 
 pub struct AiPlugin {
     pub api_key: String,
