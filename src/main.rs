@@ -1,11 +1,13 @@
-use ai::AiPlugin;
 use bevy::prelude::*;
-
 use serde::{Serialize, Deserialize};
 use toml;
 
 mod ai;
 mod gen;
+mod utils;
+
+use ai::AiPlugin;
+use utils::UtilPlugin;
 
 #[derive(Serialize, Deserialize)]
 struct Config {
@@ -21,5 +23,6 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(AiPlugin { api_key, api_org })
+        .add_plugins(UtilPlugin)
         .run();
 }
