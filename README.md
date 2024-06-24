@@ -12,9 +12,9 @@ Next you need to setup your `config.toml` file using any text editor
 when done setting up, it should look something like this
 
 ```toml
-openapi_key = API_KEY
-azure_key = API_KEY
-elevenlabs_key = API_KEY
+openapi_key = "API_KEY"
+azure_key = "API_KEY"
+elevenlabs_key = "API_KEY"
 ```
 
 ## contribution
