@@ -14,8 +14,6 @@ use utils::UtilPlugin;
 #[derive(Serialize, Deserialize)]
 struct Config {
     pub openapi_key: String,
-    pub azure_key: String,
-    pub elevenlabs_key: String,
 }
 
 fn main() {
