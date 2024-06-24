@@ -6,7 +6,16 @@ The primary inspirations to this project are Skyrim, Doug Doug's [babadaboosh](h
 
 ## build
 
-Currently, the entirety of the build can be done with cargo, but you have to run `setup.sh` on linux or `setup.bat` on windows in order to install the binaries in resources and save the api keys to the config.toml file.
+Download [this](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM), extract it, rename it to word2vec.bin, and place it in the `resources` folder
+
+Next you need to setup your `config.toml` file using any text editor
+when done setting up, it should look something like this
+
+```toml
+openapi_key = API_KEY
+azure_key = API_KEY
+elevenlabs_key = API_KEY
+```
 
 ## contribution
 
