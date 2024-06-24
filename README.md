@@ -9,7 +9,7 @@ The primary inspirations to this project are Skyrim, DND, Doug Doug's [babadaboo
 Download [this](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM), extract it, rename it to `word2vec.bin`, and place it in the `resources` folder
 
 Next you need to setup your `config.toml` file using any text editor.
-when done setting up, it should look something like this
+When done setting up, it should look something like this
 
 ```toml
 openapi_key = "API_KEY"
