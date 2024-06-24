@@ -4,10 +4,12 @@ use serde::{Serialize, Deserialize};
 mod cognitive_modules;
 mod memory_structures;
 mod skills;
+mod voice;
 
 pub use cognitive_modules::*;
 use memory_structures::*;
 use skills::*;
+use voice::*;
 
 #[derive(Component, Serialize, Deserialize)]
 pub struct Persona {
@@ -19,6 +21,7 @@ pub struct Persona {
     pub skills: Skills,
     pub background: String,
     pub personality: Personality,
+    pub voice: Voice,
 }
 #[derive(Serialize, Deserialize)]
 pub struct Personality {

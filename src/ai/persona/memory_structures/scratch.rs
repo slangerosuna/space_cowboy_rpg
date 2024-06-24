@@ -34,6 +34,6 @@ impl Scratch {
     }
 
     pub fn get_random_gossip(&self, rng: &mut Rng) -> &Gossip {
-        self.gossip.get(rng.next_range(0, self.gossip.len())).unwrap()
+        self.gossip.get(rng.range(0, self.gossip.len())).unwrap()
     }
 }

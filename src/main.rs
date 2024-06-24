@@ -13,18 +13,17 @@ use utils::UtilPlugin;
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    pub api_key: String,
-    pub api_org: String,
+    pub openapi_key: String,
+    pub azure_key: String,
+    pub elevenlabs_key: String,
 }
 
 fn main() {
     let config: Config = toml::from_str(include_str!("../config.toml")).unwrap();
-    let api_key = config.api_key;
-    let api_org = config.api_org;
 
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(AiPlugin { api_key, api_org })
+        .add_plugins(AiPlugin::from_config(config))
         .add_plugins(UtilPlugin)
         .add_plugins(RPGPlugin)
         .run();

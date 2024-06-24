@@ -1,4 +1,4 @@
-use crate::ai::{persona::*, Ai};
+use crate::ai::{persona::*, OpenAPI};
 use crate::utils::Rng;
 
 impl Persona {
@@ -16,7 +16,7 @@ impl Persona {
         }
     }
 
-    pub fn converse_with_player(&mut self, ai: &mut Ai, rng: &mut Rng) {
+    pub async fn generate_response(&mut self, statement: String, open_api: &OpenAPI, rng: &Rng) -> String {
         unimplemented!() //TODO: Implement
     }
 }
