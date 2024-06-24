@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use rs_openai::OpenAI;
 
 mod persona;
+mod utils;
 
 pub struct AiPlugin {
     pub api_key: String,

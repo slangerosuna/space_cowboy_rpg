@@ -5,7 +5,9 @@ use toml;
 mod ai;
 mod gen;
 mod utils;
+mod rpg;
 
+use rpg::RPGPlugin;
 use ai::AiPlugin;
 use utils::UtilPlugin;
 
@@ -24,5 +26,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(AiPlugin { api_key, api_org })
         .add_plugins(UtilPlugin)
+        .add_plugins(RPGPlugin)
         .run();
 }
