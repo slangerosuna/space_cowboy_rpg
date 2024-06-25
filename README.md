@@ -16,6 +16,7 @@ When done setting up, it should look something like this
 
 ```toml
 openapi_key = "API_KEY"
+elevenlabs_key = "API_KEY"
 ```
 
 ## contribution

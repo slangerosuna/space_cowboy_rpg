@@ -5,7 +5,7 @@ use crate::Config;
 use utils::player_transcriber::*;
 
 mod persona;
-pub mod utils;
+mod utils;
 
 pub struct AiPlugin {
     pub openapi_key: String,

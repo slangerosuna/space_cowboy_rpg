@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use serde::{Serialize, Deserialize};
 use tokio::runtime::Runtime;
 use toml;
+use std::env::set_var;
 
 mod ai;
 mod gen;
@@ -19,10 +20,13 @@ pub struct RT(Runtime);
 #[derive(Serialize, Deserialize)]
 struct Config {
     pub openapi_key: String,
+    pub elevenlabs_key: String,
 }
 
 fn main() {
     let config: Config = toml::from_str(include_str!("../config.toml")).unwrap();
+    unsafe { set_var("ELEVEN_API_KEY", config.elevenlabs_key.as_str() ); }
+    
     let runtime = Runtime::new().unwrap();
 
     App::new()
