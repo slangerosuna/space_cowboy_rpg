@@ -6,6 +6,9 @@ The primary inspirations to this project are Skyrim, DND, Doug Doug's [babadaboo
 
 ## build
 
+Requires Nightly Rust due to use of unstable features.
+In order to enable this, run `rustup default Nightly`
+
 Download [this](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM), extract it, rename it to `word2vec.bin`, and place it in the `resources` folder
 
 Next you need to setup your `config.toml` file using any text editor.

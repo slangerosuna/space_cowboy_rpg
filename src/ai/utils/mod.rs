@@ -1,2 +1,2 @@
 pub mod prompt_template;
-pub mod audio;
+pub mod player_transcriber;
