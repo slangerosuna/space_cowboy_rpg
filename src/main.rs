@@ -45,16 +45,13 @@ use ai::persona::voice::Voice;
 use ai::utils::player_transcriber::PlayerTranscriber;
 use ai::OpenAPI;
 use std::task::Poll;
- use rs_openai::{
-     chat::{ChatCompletionMessageRequestBuilder, CreateChatRequestBuilder, Role},
-     OpenAI,
- };
+use rs_openai::chat::{ChatCompletionMessageRequestBuilder, CreateChatRequestBuilder, Role};
 
 fn test(openapi: Res<OpenAPI>, rt: Res<RT>, mut player_transcriber: ResMut<PlayerTranscriber>) {
     player_transcriber.transcribe_player(&openapi, &rt);
     println!("recording");
     std::thread::sleep(std::time::Duration::from_secs(10));
-    player_transcriber.press_key(&rt);
+    player_transcriber.press_key();
 
     let response = loop {
         if let Poll::Ready(response) = player_transcriber.poll() {
