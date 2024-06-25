@@ -17,3 +17,6 @@ hound = "3.5.1"
 futures = "0.3.30"
 cpal = "0.15.3"
 ringbuf = "0.3.0" # needs to be outdated to work with cpal
+rten = "0.10.0"
+rten-tensor = "0.10.0"
+serde_json = "1.0.118"
