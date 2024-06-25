@@ -27,7 +27,6 @@ fn main() {
 
     App::new()
         .insert_resource(RT(runtime))
-        .add_systems(Startup, test)
         .add_plugins(DefaultPlugins)
         .add_plugins(AiPlugin::from_config(config))
         .add_plugins(UtilPlugin)
