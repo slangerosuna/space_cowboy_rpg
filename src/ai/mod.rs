@@ -4,8 +4,8 @@ use rs_openai::OpenAI;
 use crate::Config;
 use utils::player_transcriber::*;
 
-mod persona;
-mod utils;
+pub mod persona;
+pub mod utils;
 
 pub struct AiPlugin {
     pub openapi_key: String,

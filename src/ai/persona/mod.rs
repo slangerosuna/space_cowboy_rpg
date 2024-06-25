@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 mod cognitive_modules;
 mod memory_structures;
 mod skills;
-mod voice;
+pub mod voice;
 
 pub use cognitive_modules::*;
 use memory_structures::*;
