@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum ExperienceType {
@@ -21,7 +21,11 @@ pub enum ExperienceType {
 impl ExperienceType {
     pub fn is_martial(&self) -> bool {
         match self {
-            ExperienceType::LightArmor | ExperienceType::MediumArmor | ExperienceType::HeavyArmor | ExperienceType::Marksmanship | ExperienceType::Swordsmanship => true,
+            ExperienceType::LightArmor
+            | ExperienceType::MediumArmor
+            | ExperienceType::HeavyArmor
+            | ExperienceType::Marksmanship
+            | ExperienceType::Swordsmanship => true,
             _ => false,
         }
     }
@@ -55,7 +59,13 @@ fn modifier(stat: u8) -> i8 {
 }
 
 #[inline] //inline function rather than macro to force evaluation of arguments only once, improving performance
-fn max(a: i8, b: i8) -> i8 { if a > b { a } else { b } }
+fn max(a: i8, b: i8) -> i8 {
+    if a > b {
+        a
+    } else {
+        b
+    }
+}
 macro_rules! max {
     ($x:expr) => ($x);
     ($x:expr, $($y:expr),+) => (max($x, max!($($y),+)));
@@ -101,7 +111,8 @@ impl RPG {
     pub fn level_up_magic(&mut self) {
         self.level_up();
         self.magic_experience -= Self::xp_needed_to_level_up(self.magic_level);
-        self.max_mana += (5 as i8 + max!(modifier(self.intelligence), modifier(self.wisdom))) as u16;
+        self.max_mana +=
+            (5 as i8 + max!(modifier(self.intelligence), modifier(self.wisdom))) as u16;
     }
 
     pub fn level_up_martial(&mut self) {
@@ -119,29 +130,35 @@ impl RPG {
     }
 
     pub fn recalculate_max_mana(&mut self) {
-        self.max_mana = 3 + (5 as i8 + max!(modifier(self.intelligence), modifier(self.wisdom))) as u16 * self.magic_level as u16;
+        self.max_mana = 3
+            + (5 as i8 + max!(modifier(self.intelligence), modifier(self.wisdom))) as u16
+                * self.magic_level as u16;
     }
 
     pub fn recalculate_max_stamina(&mut self) {
-        self.max_stamina = 3 + (5 as i8 + modifier(self.dexterity)) as u16 * self.martial_level as u16;
+        self.max_stamina =
+            3 + (5 as i8 + modifier(self.dexterity)) as u16 * self.martial_level as u16;
     }
 
     pub fn add_xp(&mut self, xp: u16, experience_type: ExperienceType) {
         if experience_type.is_martial() {
             self.martial_experience += xp;
-            if self.martial_experience >= Self::xp_needed_to_level_up(self.martial_level)
-              { self.level_up_martial(); }
+            if self.martial_experience >= Self::xp_needed_to_level_up(self.martial_level) {
+                self.level_up_martial();
+            }
         } else {
             self.magic_experience += xp;
-            if self.magic_experience >= Self::xp_needed_to_level_up(self.magic_level)
-              { self.level_up_magic(); }
+            if self.magic_experience >= Self::xp_needed_to_level_up(self.magic_level) {
+                self.level_up_magic();
+            }
         }
         let cur_level = self.levels_experience_types[experience_type as usize];
 
         self.experience_types[experience_type as usize] += xp;
         let cur_experience = self.experience_types[experience_type as usize];
         if cur_experience >= Self::xp_needed_to_level_up(cur_level) {
-            self.experience_types[experience_type as usize] -= Self::xp_needed_to_level_up(cur_level);
+            self.experience_types[experience_type as usize] -=
+                Self::xp_needed_to_level_up(cur_level);
             self.levels_experience_types[experience_type as usize] += 1;
         }
     }
@@ -150,7 +167,5 @@ impl RPG {
 pub struct RPGPlugin;
 
 impl Plugin for RPGPlugin {
-    fn build(&self, app: &mut App) {
-
-    }
+    fn build(&self, app: &mut App) {}
 }

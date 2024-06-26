@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::ai::persona::Persona;
 
@@ -9,9 +9,7 @@ pub struct Plan {
 
 impl Plan {
     pub fn new() -> Self {
-        Self {
-            tasks: Vec::new(),
-        }
+        Self { tasks: Vec::new() }
     }
 }
 
@@ -26,10 +24,7 @@ pub struct Task {
 
 impl Task {
     pub fn new(time: f32, location: Location) -> Self {
-        Self {
-            time,
-            location,
-        }
+        Self { time, location }
     }
 }
 

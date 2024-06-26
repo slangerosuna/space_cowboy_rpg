@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use steamworks::*;
+use std::any::{Any, TypeId};
 use std::sync::Mutex;
-use std::any::{ Any, TypeId };
+use steamworks::*;
 
 pub struct NetworkingPlugin {
     pub max_players: u16,
@@ -23,13 +23,12 @@ impl Default for NetworkingPlugin {
 
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .insert_resource(NetworkingState::new(
-                self.max_players,
-                self.max_synced_objects,
-                self.app_id,
-                self.packet_per_frame_limit,
-            ));
+        app.insert_resource(NetworkingState::new(
+            self.max_players,
+            self.max_synced_objects,
+            self.app_id,
+            self.packet_per_frame_limit,
+        ));
     }
 }
 
@@ -54,7 +53,7 @@ impl NetworkingState {
         max_players: u16,
         max_synced_objects: u32,
         app_id: u32,
-        packet_per_frame_limit: u32
+        packet_per_frame_limit: u32,
     ) -> Self {
         let (client, _) = Client::init_app(app_id).unwrap();
         let player_id = client.user().steam_id();
@@ -82,7 +81,11 @@ impl NetworkingState {
         self.event_queue_out.lock().unwrap().push(event);
     }
     pub fn get_event_in(&self, event_type: u8) -> Vec<NetworkingEvent> {
-        self.event_queue_in[event_type as usize].lock().unwrap().drain(..).collect()
+        self.event_queue_in[event_type as usize]
+            .lock()
+            .unwrap()
+            .drain(..)
+            .collect()
     }
 }
 
@@ -139,7 +142,9 @@ pub enum EventType {
 
 impl EventType {
     #[inline]
-    fn num_variants() -> u8 { 6 }
+    fn num_variants() -> u8 {
+        6
+    }
 }
 
 impl From<u8> for EventType {
@@ -168,7 +173,7 @@ pub trait Serializable: Send + Sync + Any {
 
 impl<T> Serializable for T
 where
-    T: serde::Serialize + serde::de::DeserializeOwned + Send + Sync + Any + 'static
+    T: serde::Serialize + serde::de::DeserializeOwned + Send + Sync + Any + 'static,
 {
     fn from_bytes(&mut self, bytes: &[u8]) {
         *self = bincode::deserialize(bytes).unwrap();

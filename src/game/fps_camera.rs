@@ -22,7 +22,9 @@ pub fn move_camera(
     mut motion_evr: EventReader<MouseMotion>,
     mut camera_query: Query<(&mut FPSCamera, &mut Transform)>,
 ) {
-    if !cursor_lock_state.state { return; }
+    if !cursor_lock_state.state {
+        return;
+    }
 
     for (mut camera, mut transform) in camera_query.iter_mut() {
         for ev in motion_evr.read() {

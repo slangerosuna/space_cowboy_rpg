@@ -9,9 +9,7 @@ pub struct Rng {
 
 impl Rng {
     pub fn new(seed: usize) -> Self {
-        Self {
-            state: seed,
-        }
+        Self { state: seed }
     }
 
     pub fn mutate_state(&mut self) {
@@ -39,7 +37,10 @@ impl Rng {
 
     pub fn get_series(&self) -> Box<dyn Iterator<Item = Rng>> {
         let mut clone = self.clone();
-        Box::new(std::iter::from_fn(move || { clone.mutate_state(); Some(clone.clone()) }))
+        Box::new(std::iter::from_fn(move || {
+            clone.mutate_state();
+            Some(clone.clone())
+        }))
     }
 }
 

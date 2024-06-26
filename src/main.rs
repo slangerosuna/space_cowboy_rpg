@@ -2,20 +2,20 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use game::GamePlugin;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::env::set_var;
 use tokio::runtime::Runtime;
 use toml;
-use std::env::set_var;
 
 mod ai;
-mod gen;
-mod utils;
-mod rpg;
-mod networking;
 mod game;
+mod gen;
+mod networking;
+mod rpg;
+mod utils;
 
-use rpg::RPGPlugin;
 use ai::AiPlugin;
+use rpg::RPGPlugin;
 use utils::UtilPlugin;
 
 #[derive(Resource)]
@@ -29,7 +29,9 @@ struct Config {
 
 fn main() {
     let config: Config = toml::from_str(include_str!("../config.toml")).unwrap();
-    unsafe { set_var("ELEVEN_API_KEY", config.elevenlabs_key.as_str() ); }
+    unsafe {
+        set_var("ELEVEN_API_KEY", config.elevenlabs_key.as_str());
+    }
 
     let runtime = Runtime::new().unwrap();
 

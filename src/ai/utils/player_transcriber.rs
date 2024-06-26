@@ -1,15 +1,23 @@
-use std::{io::Cursor, mem::MaybeUninit, sync::{atomic::AtomicBool, Arc}, task::Poll};
-use cpal::StreamConfig;
-use futures::future::FutureExt;
-use bevy::prelude::*;
-use ringbuf::{Consumer, HeapRb, SharedRb};
 use crate::ai::OpenAPI;
 use crate::RT;
-use hound::WavSpec;
-use rs_openai::{audio::ResponseFormat, shared::{response_wrapper::OpenAIError, types::FileMeta}};
-use tokio::task::JoinHandle;
-use rs_openai::audio::{CreateTranscriptionRequestBuilder, Language};
+use bevy::prelude::*;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::StreamConfig;
+use futures::future::FutureExt;
+use hound::WavSpec;
+use ringbuf::{Consumer, HeapRb, SharedRb};
+use rs_openai::audio::{CreateTranscriptionRequestBuilder, Language};
+use rs_openai::{
+    audio::ResponseFormat,
+    shared::{response_wrapper::OpenAIError, types::FileMeta},
+};
+use std::{
+    io::Cursor,
+    mem::MaybeUninit,
+    sync::{atomic::AtomicBool, Arc},
+    task::Poll,
+};
+use tokio::task::JoinHandle;
 
 #[derive(Resource)]
 pub struct PlayerTranscriber {
@@ -23,11 +31,13 @@ struct MicInput {
 }
 
 pub fn consume_idle_mic_input(mut mic_input: ResMut<PlayerTranscriber>) {
-    if mic_input.is_transcribing() { return; }
+    if mic_input.is_transcribing() {
+        return;
+    }
 
     loop {
         match mic_input.mic_input.consumer.pop() {
-            Some(_) => {},
+            Some(_) => {}
             _ => break,
         }
     }
@@ -35,8 +45,12 @@ pub fn consume_idle_mic_input(mut mic_input: ResMut<PlayerTranscriber>) {
 
 impl PlayerTranscriber {
     pub fn new() -> Self {
-        let microphone = cpal::default_host().default_input_device().expect("no input device available");
-        let stream_config = microphone.default_input_config().expect("no default input config available");
+        let microphone = cpal::default_host()
+            .default_input_device()
+            .expect("no input device available");
+        let stream_config = microphone
+            .default_input_config()
+            .expect("no default input config available");
         let stream_config: StreamConfig = stream_config.into();
 
         let latency_frames = stream_config.sample_rate.0 as f32;
@@ -47,21 +61,23 @@ impl PlayerTranscriber {
 
         let mic_input = MicInput { consumer };
 
-        let input_stream = microphone.build_input_stream(
-            &stream_config,
-            move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                for &sample in data {
-                    if producer.push(sample).is_err() {
-                        eprintln!("ring buffer overrun");
-                        break;
+        let input_stream = microphone
+            .build_input_stream(
+                &stream_config,
+                move |data: &[f32], _: &cpal::InputCallbackInfo| {
+                    for &sample in data {
+                        if producer.push(sample).is_err() {
+                            eprintln!("ring buffer overrun");
+                            break;
+                        }
                     }
-                }
-            },
-            move |err| {
-                eprintln!("an error occurred on the input stream: {}", err);
-            },
-            None,
-        ).unwrap();
+                },
+                move |err| {
+                    eprintln!("an error occurred on the input stream: {}", err);
+                },
+                None,
+            )
+            .unwrap();
 
         input_stream.play().unwrap();
         std::mem::forget(input_stream);
@@ -82,9 +98,12 @@ impl PlayerTranscriber {
         // safe as long as we ensure that there are no concurrent transcriptions, which we do
         // technically can make use of undefined behavior (multiple mutable references) when methods are called, but there are no side effects to this
         let this = unsafe { std::mem::transmute::<&mut Self, &'static mut Self>(self) };
-        self.key_press_waiter.store(false, std::sync::atomic::Ordering::Relaxed);
+        self.key_press_waiter
+            .store(false, std::sync::atomic::Ordering::Relaxed);
 
-        self.transcribe_player_handle = Some(rt.0.spawn(this.transcribe_player_internal(open_ai, this.key_press_waiter.clone())));
+        self.transcribe_player_handle = Some(
+            rt.0.spawn(this.transcribe_player_internal(open_ai, this.key_press_waiter.clone())),
+        );
     }
 
     pub fn poll(&mut self) -> Poll<Result<String, OpenAIError>> {
@@ -102,21 +121,30 @@ impl PlayerTranscriber {
     }
 
     pub fn press_key(&mut self) {
-        self.key_press_waiter.store(true, std::sync::atomic::Ordering::Relaxed);
+        self.key_press_waiter
+            .store(true, std::sync::atomic::Ordering::Relaxed);
     }
 
     pub fn is_transcribing(&self) -> bool {
         self.transcribe_player_handle.is_some()
     }
 
-    async fn transcribe_player_internal(&mut self, open_ai: &'static OpenAPI, key_press_waiter: Arc<AtomicBool>) -> Result<String, OpenAIError> {
-        let response = open_ai.client.audio().create_transcription_with_text_response(
-            &(CreateTranscriptionRequestBuilder::default()
-                .file(self.listen_to_player(key_press_waiter).await)
-                .language(Language::English)
-                .response_format(ResponseFormat::Text)
-                .build()?)
-        ).await?;
+    async fn transcribe_player_internal(
+        &mut self,
+        open_ai: &'static OpenAPI,
+        key_press_waiter: Arc<AtomicBool>,
+    ) -> Result<String, OpenAIError> {
+        let response = open_ai
+            .client
+            .audio()
+            .create_transcription_with_text_response(
+                &(CreateTranscriptionRequestBuilder::default()
+                    .file(self.listen_to_player(key_press_waiter).await)
+                    .language(Language::English)
+                    .response_format(ResponseFormat::Text)
+                    .build()?),
+            )
+            .await?;
 
         Ok(response)
     }
@@ -128,7 +156,9 @@ impl PlayerTranscriber {
             for _ in 0..4096 {
                 match self.mic_input.consumer.pop() {
                     Some(sample) => buffer.push(sample),
-                    _ => { break;},
+                    _ => {
+                        break;
+                    }
                 }
             }
         }
@@ -145,7 +175,7 @@ impl PlayerTranscriber {
         let mut wav = Cursor::new(Vec::new());
         let spec = WavSpec {
             channels: 1,
-            sample_rate: 48000,//buffer.sample_rate() as u32,
+            sample_rate: 48000, //buffer.sample_rate() as u32,
             bits_per_sample: 32,
             sample_format: hound::SampleFormat::Float,
         };

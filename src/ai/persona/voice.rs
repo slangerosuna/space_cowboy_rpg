@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use elevenlabs_rs::{ Speech, Result, };
+use elevenlabs_rs::{Result, Speech};
 
 #[derive(Serialize, Deserialize)]
 pub struct Voice {
@@ -9,12 +9,7 @@ pub struct Voice {
 
 impl Voice {
     pub async fn tts(&self, text: &str) -> Result<()> {
-        let speech = Speech::new(
-            text,
-            self.voice_id.as_str(),
-            "eleven_monolingual_v1",
-            0,
-        ).await?;
+        let speech = Speech::new(text, self.voice_id.as_str(), "eleven_monolingual_v1", 0).await?;
 
         speech.play()?;
 

@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::PrimaryWindow };
+use bevy::{prelude::*, window::PrimaryWindow};
 #[derive(Resource)]
 pub struct CursorLockState {
     pub state: bool,
@@ -10,8 +10,7 @@ pub fn lock_cursor_position(
     btn: Res<ButtonInput<MouseButton>>,
     key: Res<ButtonInput<KeyCode>>,
 ) {
-    let Ok(mut primary) = primary_query.get_single_mut() else
-    {
+    let Ok(mut primary) = primary_query.get_single_mut() else {
         return;
     };
 

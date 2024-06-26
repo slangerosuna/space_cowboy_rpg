@@ -26,8 +26,7 @@ impl Plugin for AiPlugin {
         let api_key = self.openapi_key.clone();
         let api_org = self.openapi_org.clone();
 
-        app
-            .add_systems(Update, consume_idle_mic_input)
+        app.add_systems(Update, consume_idle_mic_input)
             .insert_resource(OpenAPI::new(api_key, api_org))
             .insert_resource(PlayerTranscriber::new());
     }
@@ -40,7 +39,10 @@ pub struct OpenAPI {
 
 impl OpenAPI {
     fn new(api_key: String, api_org: Option<String>) -> Self {
-        let client = OpenAI::new(&OpenAI { api_key, org_id: api_org, });
+        let client = OpenAI::new(&OpenAI {
+            api_key,
+            org_id: api_org,
+        });
         Self { client }
     }
 }
