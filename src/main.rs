@@ -9,6 +9,7 @@ mod ai;
 mod gen;
 mod utils;
 mod rpg;
+mod networking;
 
 use rpg::RPGPlugin;
 use ai::AiPlugin;
