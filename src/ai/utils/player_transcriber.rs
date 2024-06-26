@@ -39,9 +39,6 @@ impl PlayerTranscriber {
         let stream_config = microphone.default_input_config().expect("no default input config available");
         let stream_config: StreamConfig = stream_config.into();
 
-        println!("Default input device: {}", microphone.name().unwrap());
-        println!("Stream config: {:?}", stream_config);
-
         let latency_frames = stream_config.sample_rate.0 as f32;
         let latency_samples = latency_frames as usize * stream_config.channels as usize;
 

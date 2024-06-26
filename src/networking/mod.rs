@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use rs_openai::client;
 use steamworks::*;
 use std::sync::Mutex;
 use std::any::{ Any, TypeId };
@@ -161,7 +160,7 @@ impl From<u8> for EventType {
 pub trait Serializable: Send + Sync + Any {
     fn from_bytes(&mut self, bytes: &[u8]);
     fn to_bytes(&self) -> Vec<u8>;
-    
+
     fn get_length(&self) -> usize;
     //used to identify the type of the component when synchronizing
     fn get_type_id(&self) -> TypeId;

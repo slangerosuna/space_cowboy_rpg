@@ -11,6 +11,10 @@ Download [this](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM), e
 Next you need to setup your `config.toml` file using any text editor.
 When done setting up, it should look something like this
 
+As this makes use of cargo, the project can be built with the `cargo b` command.
+
+After this, when built, if you choose to deploy the binary, make sure that it is in the same directory as your resource folder or a copy of it
+
 ```toml
 openapi_key = "API_KEY"
 elevenlabs_key = "API_KEY"

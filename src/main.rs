@@ -1,5 +1,7 @@
 #![feature(async_closure)]
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
+use game::GamePlugin;
 use serde::{Serialize, Deserialize};
 use tokio::runtime::Runtime;
 use toml;
@@ -10,6 +12,7 @@ mod gen;
 mod utils;
 mod rpg;
 mod networking;
+mod game;
 
 use rpg::RPGPlugin;
 use ai::AiPlugin;
@@ -32,9 +35,11 @@ fn main() {
 
     App::new()
         .insert_resource(RT(runtime))
-        .add_systems(Startup, test)
         .add_plugins(DefaultPlugins)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        //.add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(AiPlugin::from_config(config))
+        .add_plugins(GamePlugin)
         .add_plugins(UtilPlugin)
         .add_plugins(RPGPlugin)
         .run();
@@ -42,6 +47,7 @@ fn main() {
     std::process::exit(0);
 }
 
+/*
 use ai::persona::voice::Voice;
 use ai::utils::player_transcriber::PlayerTranscriber;
 use ai::OpenAPI;
@@ -73,4 +79,4 @@ fn test(openapi: Res<OpenAPI>, rt: Res<RT>, mut player_transcriber: ResMut<Playe
     let voice = Voice { voice_id: "Clyde".to_string() };
 
     rt.0.block_on(voice.tts(&response.choices[0].message.content.as_str())).unwrap();
-}
+}*/
