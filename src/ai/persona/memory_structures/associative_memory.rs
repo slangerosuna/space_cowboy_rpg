@@ -1,3 +1,4 @@
+use bevy::prelude::Component;
 use serde::{Serialize, Deserialize};
 
 use word2vec::wordvectors::WordVector;
@@ -8,7 +9,7 @@ lazy_static! { pub static ref WORD2VEC: WordVector = WordVector::load_from_binar
 const MIN_ASSOCIATIVE_STRENGTH: f32 = 0.9;
 #[derive(Serialize, Deserialize, PartialEq)]
 pub struct ConceptNode {
-    word: String,
+    pub word: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -20,7 +21,7 @@ pub struct Association {
     pub strength: f32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Component)]
 pub struct AssociativeMemory {
     pub associations: Vec<Association>,
 }

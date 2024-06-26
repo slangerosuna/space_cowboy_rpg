@@ -7,7 +7,7 @@ use crate::ai::OpenAPI;
 use crate::RT;
 use hound::WavSpec;
 use rs_openai::{audio::ResponseFormat, shared::{response_wrapper::OpenAIError, types::FileMeta}};
-use tokio::{sync::Mutex, task::JoinHandle};
+use tokio::task::JoinHandle;
 use rs_openai::audio::{CreateTranscriptionRequestBuilder, Language};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 

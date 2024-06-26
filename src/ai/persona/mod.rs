@@ -11,13 +11,22 @@ use memory_structures::*;
 use skills::*;
 use voice::*;
 
+pub fn simulate_day(
+    mut persona_query: Query<(&mut Persona, &mut Scratch, &mut AssociativeMemory)>,
+    mut rng: ResMut<crate::utils::Rng>,
+) {
+    for (mut persona, mut scratch, mut associative_memory) in persona_query.iter_mut() {
+        scratch.forget_gossip(&mut rng);
+        scratch.fade_gossip(&mut rng);
+        scratch.store_to_memory(&mut associative_memory, &mut rng);
+    }
+}
+
 #[derive(Component, Serialize, Deserialize)]
 pub struct Persona {
     pub name: String,
     pub age: u32,
     pub birthday: u32,
-    pub associative_memory: AssociativeMemory,
-    pub scratch: Scratch,
     pub skills: Skills,
     pub background: String,
     pub personality: Personality,
