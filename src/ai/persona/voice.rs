@@ -9,7 +9,7 @@ pub struct Voice {
 
 impl Voice {
     pub async fn tts(&self, text: &str) -> Result<()> {
-        let speech = Speech::new(text, self.voice_id.as_str(), "eleven_monolingual_v1", 0).await?;
+        let speech = Speech::new(text, self.voice_id.as_str(), "eleven_turbo_v2", 0).await?;
 
         speech.play()?;
 

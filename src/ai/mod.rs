@@ -27,6 +27,7 @@ impl Plugin for AiPlugin {
         let api_org = self.openapi_org.clone();
 
         app.add_systems(Update, consume_idle_mic_input)
+            .add_systems(Update, press_transcribe_key)
             .insert_resource(OpenAPI::new(api_key, api_org))
             .insert_resource(PlayerTranscriber::new());
     }

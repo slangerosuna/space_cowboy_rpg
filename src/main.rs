@@ -48,37 +48,3 @@ fn main() {
 
     std::process::exit(0);
 }
-
-/*
-use ai::persona::voice::Voice;
-use ai::utils::player_transcriber::PlayerTranscriber;
-use ai::OpenAPI;
-use std::task::Poll;
-use rs_openai::chat::{ChatCompletionMessageRequestBuilder, CreateChatRequestBuilder, Role};
-
-fn test(openapi: Res<OpenAPI>, rt: Res<RT>, mut player_transcriber: ResMut<PlayerTranscriber>) {
-    player_transcriber.transcribe_player(&openapi, &rt);
-    println!("recording");
-    std::thread::sleep(std::time::Duration::from_secs(10));
-    player_transcriber.press_key();
-
-    let response = loop {
-        if let Poll::Ready(response) = player_transcriber.poll() {
-            break response;
-        }
-    }.unwrap();
-
-    let req = CreateChatRequestBuilder::default()
-        .model("gpt-3.5-turbo")
-        .messages(vec![ChatCompletionMessageRequestBuilder::default()
-            .role(Role::User)
-            .content(response)
-            .build().unwrap()])
-        .build().unwrap();
-
-    let response = rt.0.block_on(openapi.client.chat().create(&req)).unwrap();
-
-    let voice = Voice { voice_id: "Clyde".to_string() };
-
-    rt.0.block_on(voice.tts(&response.choices[0].message.content.as_str())).unwrap();
-}*/

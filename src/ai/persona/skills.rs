@@ -6,6 +6,15 @@ pub struct Skills {
     pub learned: Vec<Skill>,
 }
 
+impl Skills {
+    pub fn new() -> Self {
+        Self {
+            innate: Vec::new(),
+            learned: Vec::new(),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Skill {
     pub skill: String,

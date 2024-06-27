@@ -3,7 +3,7 @@ use cognitive_modules::converse::ConversationHandler;
 use serde::{Deserialize, Serialize};
 
 mod cognitive_modules;
-mod memory_structures;
+pub mod memory_structures;
 mod skills;
 pub mod voice;
 
@@ -34,6 +34,32 @@ pub struct Persona {
 
     #[serde(skip)]
     pub conversation_handler: ConversationHandler,
+}
+
+impl Persona {
+    pub fn new() -> Self {
+        Self {
+            name: String::new(),
+            age: 0,
+            birthday: 0,
+            skills: Skills::new(),
+            background: String::new(),
+            personality: Personality {
+                openness: 0.0,
+                conscientiousness: 0.0,
+                extraversion: 0.0,
+                agreeableness: 0.0,
+                neuroticism: 0.0,
+                traits: Vec::new(),
+                ideals: Vec::new(),
+                bonds: Vec::new(),
+                flaws: Vec::new(),
+            },
+            voice: Voice { voice_id: "Clyde".to_string() },
+            conversation_handler: ConversationHandler::default(),
+        }
+    }
+
 }
 #[derive(Serialize, Deserialize)]
 pub struct Personality {

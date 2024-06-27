@@ -11,6 +11,7 @@ use rs_openai::{
     audio::ResponseFormat,
     shared::{response_wrapper::OpenAIError, types::FileMeta},
 };
+use std::sync::Mutex;
 use std::{
     io::Cursor,
     mem::MaybeUninit,
@@ -19,24 +20,36 @@ use std::{
 };
 use tokio::task::JoinHandle;
 
+pub fn press_transcribe_key(
+    player_transcriber: Res<PlayerTranscriber>,
+    btn: Res<ButtonInput<KeyCode>>,
+) {
+    if btn.just_pressed(KeyCode::KeyF) {
+        player_transcriber.press_key();
+    }
+}
+
 #[derive(Resource)]
 pub struct PlayerTranscriber {
-    transcribe_player_handle: Option<JoinHandle<Result<String, OpenAIError>>>,
+    transcribe_player_handle: Mutex<Option<JoinHandle<Result<String, OpenAIError>>>>,
     key_press_waiter: Arc<AtomicBool>,
-    mic_input: MicInput,
+    is_transcribing: AtomicBool,
+    mic_input: Mutex<MicInput>,
 }
 
 struct MicInput {
     consumer: Consumer<f32, Arc<SharedRb<f32, Vec<MaybeUninit<f32>>>>>,
 }
 
-pub fn consume_idle_mic_input(mut mic_input: ResMut<PlayerTranscriber>) {
+pub fn consume_idle_mic_input(mic_input: Res<PlayerTranscriber>) {
     if mic_input.is_transcribing() {
         return;
     }
 
+    let mut mic_input = mic_input.mic_input.lock().unwrap();
+
     loop {
-        match mic_input.mic_input.consumer.pop() {
+        match mic_input.consumer.pop() {
             Some(_) => {}
             _ => break,
         }
@@ -60,6 +73,7 @@ impl PlayerTranscriber {
         let (mut producer, consumer) = ring.split();
 
         let mic_input = MicInput { consumer };
+        let mic_input = Mutex::new(mic_input);
 
         let input_stream = microphone
             .build_input_stream(
@@ -83,36 +97,67 @@ impl PlayerTranscriber {
         std::mem::forget(input_stream);
 
         Self {
-            transcribe_player_handle: None,
+            transcribe_player_handle: Mutex::new(None),
             key_press_waiter: Arc::new(AtomicBool::new(false)),
             mic_input,
+            is_transcribing: AtomicBool::new(false),
         }
     }
 
-    pub fn transcribe_player(&mut self, open_ai: &OpenAPI, rt: &RT) {
+    pub async fn transcribe_player_async(&self, open_ai: &OpenAPI) -> Result<String, OpenAIError> {
         if self.is_transcribing() {
-            return;
+            return Err(OpenAIError::InvalidArgument("".to_string()));
         }
-        // safe because the OpenAPI resource is never dropped or kept as a mutable reference
-        let open_ai = unsafe { std::mem::transmute::<&OpenAPI, &'static OpenAPI>(open_ai) };
-        // safe as long as we ensure that there are no concurrent transcriptions, which we do
-        // technically can make use of undefined behavior (multiple mutable references) when methods are called, but there are no side effects to this
-        let this = unsafe { std::mem::transmute::<&mut Self, &'static mut Self>(self) };
+
+        self.is_transcribing.store(true, std::sync::atomic::Ordering::Relaxed);
+
         self.key_press_waiter
             .store(false, std::sync::atomic::Ordering::Relaxed);
 
-        self.transcribe_player_handle = Some(
-            rt.0.spawn(this.transcribe_player_internal(open_ai, this.key_press_waiter.clone())),
-        );
+        self.transcribe_player_internal(open_ai, self.key_press_waiter.clone()).await
     }
 
-    pub fn poll(&mut self) -> Poll<Result<String, OpenAIError>> {
-        if let Some(handle) = self.transcribe_player_handle.as_mut() {
+    pub fn transcribe_player(&self, open_ai: &OpenAPI, rt: &RT) {
+        if self.is_transcribing() {
+            return;
+        }
+
+        self.is_transcribing.store(true, std::sync::atomic::Ordering::Relaxed);
+        // safe because the OpenAPI resource is never dropped or kept as a mutable reference
+        let open_ai = unsafe { std::mem::transmute::<&OpenAPI, &'static OpenAPI>(open_ai) };
+        // safe as long as we ensure that there are no concurrent transcriptions, which we do
+        let this = unsafe { std::mem::transmute::<&Self, &'static Self>(self) };
+        self.key_press_waiter
+            .store(false, std::sync::atomic::Ordering::Relaxed);
+
+        let transcribe_player_handle = Some(
+            rt.0.spawn(this.transcribe_player_internal(open_ai, this.key_press_waiter.clone())),
+        );
+
+        let mut guard = self.transcribe_player_handle.lock().unwrap();
+        *guard = transcribe_player_handle;
+    }
+
+    pub async fn await_transcription(&self) -> Option<Result<String, OpenAIError>> {
+        let mut guard = self.transcribe_player_handle.lock().unwrap();
+
+        if let Some(handle) = guard.as_mut() {
+            let res = handle.await.unwrap();
+            *guard = None;
+            Some(res)
+        } else {
+            None
+        }
+    }
+
+    pub fn poll(&self) -> Poll<Result<String, OpenAIError>> {
+        let mut guard = self.transcribe_player_handle.lock().unwrap();
+        if let Some(handle) = guard.as_mut() {
             if handle.is_finished() {
                 let res = handle.now_or_never();
                 let res = res.unwrap();
                 let res = Poll::Ready(res.unwrap());
-                self.transcribe_player_handle = None;
+                *guard = None;
                 return res;
             }
         }
@@ -120,18 +165,18 @@ impl PlayerTranscriber {
         Poll::Pending
     }
 
-    pub fn press_key(&mut self) {
+    pub fn press_key(&self) {
         self.key_press_waiter
             .store(true, std::sync::atomic::Ordering::Relaxed);
     }
 
     pub fn is_transcribing(&self) -> bool {
-        self.transcribe_player_handle.is_some()
+        self.is_transcribing.load(std::sync::atomic::Ordering::Relaxed)
     }
 
     async fn transcribe_player_internal(
-        &mut self,
-        open_ai: &'static OpenAPI,
+        &self,
+        open_ai: &OpenAPI,
         key_press_waiter: Arc<AtomicBool>,
     ) -> Result<String, OpenAIError> {
         let response = open_ai
@@ -149,12 +194,13 @@ impl PlayerTranscriber {
         Ok(response)
     }
 
-    async fn listen_to_player(&mut self, key_press_waiter: Arc<AtomicBool>) -> FileMeta {
+    async fn listen_to_player(&self, key_press_waiter: Arc<AtomicBool>) -> FileMeta {
         let mut buffer = Vec::new();
 
+        let mut guard = self.mic_input.lock().unwrap();
         while !key_press_waiter.load(std::sync::atomic::Ordering::Relaxed) {
             for _ in 0..4096 {
-                match self.mic_input.consumer.pop() {
+                match guard.consumer.pop() {
                     Some(sample) => buffer.push(sample),
                     _ => {
                         break;
@@ -162,6 +208,9 @@ impl PlayerTranscriber {
                 }
             }
         }
+        drop(guard);
+
+        self.is_transcribing.store(false, std::sync::atomic::Ordering::Relaxed);
 
         let buffer = Self::to_wav(&mut buffer);
 
