@@ -36,6 +36,11 @@ impl PromptTemplate {
                     current_argument = String::new();
                     in_section = true;
                 }
+                Some('#') => {
+                    while let Some(c) = contents.next() {
+                        if c == '\n' { break; }
+                    }
+                }
                 Some(c) => {
                     if in_section {
                         current_section.push(c);
