@@ -1,5 +1,11 @@
-use crate::ai::{persona::*, OpenAPI};
+use crate::ai::{persona::*, OpenAPI, PlayerTranscriber};
 use crate::utils::Rng;
+use crate::RT;
+
+#[derive(Default)]
+pub struct ConversationHandler {
+
+}
 
 impl Persona {
     pub fn converse_with_persona(
@@ -20,12 +26,15 @@ impl Persona {
         }
     }
 
-    pub async fn generate_response(
+    pub fn start_conversation_with_player(
         &mut self,
-        statement: String,
         open_api: &OpenAPI,
+        player_transcriber: &mut PlayerTranscriber,
+        scratch: &mut Scratch,
+        associative: &mut AssociativeMemory,
+        rt: &RT,
         rng: &Rng,
-    ) -> String {
-        unimplemented!() //TODO: Implement
+    ) {
+
     }
 }

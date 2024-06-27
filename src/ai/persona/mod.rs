@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use cognitive_modules::converse::ConversationHandler;
 use serde::{Deserialize, Serialize};
 
 mod cognitive_modules;
@@ -30,6 +31,9 @@ pub struct Persona {
     pub background: String,
     pub personality: Personality,
     pub voice: Voice,
+
+    #[serde(skip)]
+    pub conversation_handler: ConversationHandler,
 }
 #[derive(Serialize, Deserialize)]
 pub struct Personality {
