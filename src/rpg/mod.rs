@@ -16,6 +16,7 @@ pub enum ExperienceType {
     Evocation = 10,
     Illusion = 11,
     Necromancy = 12,
+    Engineering = 13,
 }
 
 impl ExperienceType {
@@ -38,8 +39,8 @@ pub struct RPG {
     martial_level: u8,
     magic_experience: u16,
     martial_experience: u16,
-    experience_types: [u16; 13],
-    levels_experience_types: [u8; 13],
+    experience_types: [u16; 14],
+    levels_experience_types: [u8; 14],
     health: f32,
     max_health: u16,
     mana: f32,
@@ -86,8 +87,8 @@ impl RPG {
             martial_level: 1,
             magic_experience: 0,
             martial_experience: 0,
-            experience_types: [0; 13],
-            levels_experience_types: [1; 13],
+            experience_types: [0; 14],
+            levels_experience_types: [1; 14],
             health: (8 + modifier(constitution)) as f32,
             max_health: (8 + modifier(constitution)) as u16,
             mana: (8 + max!(modifier(intelligence), modifier(wisdom))) as f32,
