@@ -6,7 +6,7 @@ pub struct PromptTemplate {
 }
 
 impl PromptTemplate {
-    pub fn load_file(file: &Path) -> Self {
+    pub fn load_file(file: &str) -> Self {
         let contents = std::fs::read_to_string(file).expect("Failed to read file");
         let mut contents = contents.chars();
 
@@ -38,7 +38,9 @@ impl PromptTemplate {
                 }
                 Some('#') => {
                     while let Some(c) = contents.next() {
-                        if c == '\n' { break; }
+                        if c == '\n' {
+                            break;
+                        }
                     }
                 }
                 Some(c) => {
@@ -61,7 +63,7 @@ impl PromptTemplate {
         }
     }
 
-    pub fn format(&self, args: Vec<String>) -> String {
+    pub fn format(&self, args: Vec<&String>) -> String {
         let mut formatted = String::new();
         for i in 0..self.text_sections.len() {
             formatted.push_str(&self.text_sections[i]);

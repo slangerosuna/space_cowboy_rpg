@@ -54,24 +54,24 @@ impl Scratch {
         self.gossip.push(gossip);
     }
 
-    pub fn get_random_gossip(&self, rng: &mut Rng) -> &Gossip {
+    pub fn get_random_gossip(&self, rng: &Rng) -> &Gossip {
         self.gossip.get(rng.range(0, self.gossip.len())).unwrap()
     }
 
-    pub fn forget_gossip(&mut self, rng: &mut Rng) {
+    pub fn forget_gossip(&mut self, rng: &Rng) {
         let mut series = rng.get_series();
         self.gossip
             .retain(|g| g.interest > 1.0 / self.retention - series.next().unwrap().f32() * 0.1);
     }
 
-    pub fn fade_gossip(&mut self, rng: &mut Rng) {
+    pub fn fade_gossip(&mut self, rng: &Rng) {
         let mut series = rng.get_series();
         self.gossip
             .iter_mut()
             .for_each(|g| g.interest -= series.next().unwrap().f32() * 0.1);
     }
 
-    pub fn store_to_memory(&self, memory: &mut AssociativeMemory, rng: &mut Rng) {
+    pub fn store_to_memory(&self, memory: &mut AssociativeMemory, rng: &Rng) {
         let mut series = rng.get_series();
         self.gossip
             .iter()

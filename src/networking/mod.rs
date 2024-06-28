@@ -33,11 +33,11 @@ impl Plugin for NetworkingPlugin {
             self.app_id,
             self.packet_per_frame_limit,
         ))
-            .add_systems(Update, handle_networking)
-            .add_systems(Update, sync_slave_entities)
-            .add_systems(Update, sync_master_entities)
-            .add_systems(Update, delete_marked_slaves)
-            .add_systems(Update, delete_marked_masters);
+        .add_systems(Update, handle_networking)
+        .add_systems(Update, sync_slave_entities)
+        .add_systems(Update, sync_master_entities)
+        .add_systems(Update, delete_marked_slaves)
+        .add_systems(Update, delete_marked_masters);
     }
 }
 
@@ -218,24 +218,23 @@ pub struct SynchronizedMaster {
 }
 impl SynchronizedMaster {
     pub fn destroy(&mut self, networking: &NetworkingState) {
-         //sets the first bit which signifies whether to delete to 1 marking it for deletion
-         self.object_info |= 0b10000000;
+        //sets the first bit which signifies whether to delete to 1 marking it for deletion
+        self.object_info |= 0b10000000;
 
-         let mut bytes: Vec<u8> = Vec::new();
+        let mut bytes: Vec<u8> = Vec::new();
 
-         bytes.push(EntityDelete as u8);
-         bytes.push(self.static_id.to_le_bytes()[0]);
-         bytes.push(self.static_id.to_le_bytes()[1]);
+        bytes.push(EntityDelete as u8);
+        bytes.push(self.static_id.to_le_bytes()[0]);
+        bytes.push(self.static_id.to_le_bytes()[1]);
 
-         networking.send_all_reliable(bytes);
+        networking.send_all_reliable(bytes);
     }
 }
 
-fn handle_networking(
-    mut networking_res: ResMut<NetworkingState>
-) {
-    if !networking_res.connected
-        { return; }
+fn handle_networking(mut networking_res: ResMut<NetworkingState>) {
+    if !networking_res.connected {
+        return;
+    }
 
     let networking = networking_res.client.networking();
 
@@ -244,50 +243,60 @@ fn handle_networking(
 
     drop(guard); //unlocks the mutex
 
-    events_to_send.into_iter().map(
-        |event| { networking_res.send_all_reliable(event.to_bytes()); } 
-    ).for_each(drop);
+    events_to_send
+        .into_iter()
+        .map(|event| {
+            networking_res.send_all_reliable(event.to_bytes());
+        })
+        .for_each(drop);
 
     let mut i: u32 = 0;
     loop {
         //limits the number of packets read per frame to packet_per_frame_limit
-        if i >= networking_res.packet_per_frame_limit
-            { break; }
+        if i >= networking_res.packet_per_frame_limit {
+            break;
+        }
         i += 1;
 
         let is_packet_available = networking.is_p2p_packet_available();
         //if no packet is available, return
-        if !is_packet_available.is_some()
-            { return; }
+        if !is_packet_available.is_some() {
+            return;
+        }
 
         //creates a buffer with the size of the packet
-        let mut buffer: Vec<u8> =
-            Vec::with_capacity(is_packet_available.unwrap());
+        let mut buffer: Vec<u8> = Vec::with_capacity(is_packet_available.unwrap());
 
         //reads the packet into the buffer
         let (_sender, len) = networking.read_p2p_packet(buffer.as_mut_slice()).unwrap();
 
         //if the sender is not in the active players list, add them
         match EventType::from(buffer[0]) {
-            EntityUpdate => networking_res.sync_messages.push(SyncMessage { data: buffer[..len].into() }),
-            EntityDelete => networking_res.sync_messages.push(SyncMessage { data: buffer[..len].into() }),
+            EntityUpdate => networking_res.sync_messages.push(SyncMessage {
+                data: buffer[..len].into(),
+            }),
+            EntityDelete => networking_res.sync_messages.push(SyncMessage {
+                data: buffer[..len].into(),
+            }),
             EntityCreate => {
                 //TODO create entity
-            },
+            }
             PlayerJoin => {
                 //TODO add player
-            },
+            }
             PlayerLeave => {
                 //TODO remove player and all their entities that are destroy_on_owner_disconnect
                 //TODO decide who inherits their entities
-            },
+            }
             Event => {
                 //doesn't include the first byte which is the msg type
                 let event = NetworkingEvent::from_bytes(&buffer[1..]);
 
-                let mut queue_in = networking_res.event_queue_in[event.event_type as usize].lock().unwrap();
+                let mut queue_in = networking_res.event_queue_in[event.event_type as usize]
+                    .lock()
+                    .unwrap();
                 queue_in.push(event);
-            },
+            }
         }
     }
 }
@@ -296,8 +305,9 @@ fn sync_slave_entities(
     mut networking: ResMut<NetworkingState>,
     mut query: Query<(&mut dyn Serializable, &mut SynchronizedSlave)>,
 ) {
-    if !networking.connected
-        { return; }
+    if !networking.connected {
+        return;
+    }
     //clones the sync messages to prevent borrowing issues
     let sync_messages = networking.sync_messages.clone();
 
@@ -314,16 +324,19 @@ fn sync_slave_entities(
                         let mut n = 0;
                         while i < message.data.len() {
                             const MAX_COMPONENTS_PER_ENTITY: usize = 16; //arbitrary number, should be removed after testing
-                            if n > MAX_COMPONENTS_PER_ENTITY
-                                { println!("Exceeded maximum "); break; }
-                            let component_id = u16::from_le_bytes([message.data[i], message.data[i + 1]]);
+                            if n > MAX_COMPONENTS_PER_ENTITY {
+                                println!("Exceeded maximum ");
+                                break;
+                            }
+                            let component_id =
+                                u16::from_le_bytes([message.data[i], message.data[i + 1]]);
                             i += 2;
- 
+
                             //finds the component with the matching id and updates it
                             for mut component in &mut entity.0 {
                                 if component.get_type_id() == component_id {
                                     let len = component.get_length();
-                                    component.from_bytes(&message.data[i..i+len]);
+                                    component.from_bytes(&message.data[i..i + len]);
                                     i += len;
                                     break;
                                 }
@@ -333,7 +346,7 @@ fn sync_slave_entities(
                         break;
                     }
                 }
-            },
+            }
             EntityDelete => {
                 let static_id = u16::from_le_bytes([message.data[1], message.data[2]]);
                 for mut entity in query.iter_mut() {
@@ -342,8 +355,10 @@ fn sync_slave_entities(
                         break;
                     }
                 }
-            },
-            _ => { panic!("Invalid sync message"); }, //Should be impossible to reach
+            }
+            _ => {
+                panic!("Invalid sync message");
+            } //Should be impossible to reach
         }
     }
 
@@ -352,13 +367,15 @@ fn sync_slave_entities(
 
 fn sync_master_entities(
     networking: Res<NetworkingState>,
-    query: Query<(&dyn Serializable, &SynchronizedMaster)>
+    query: Query<(&dyn Serializable, &SynchronizedMaster)>,
 ) {
-    if !networking.connected
-        { return; }
+    if !networking.connected {
+        return;
+    }
 
     for entity in query.iter() {
-        if (entity.1.object_info & 0b01000000) != 0 { //checks whether or not to sync periodically
+        if (entity.1.object_info & 0b01000000) != 0 {
+            //checks whether or not to sync periodically
             let mut bytes: Vec<u8> = Vec::new();
 
             //Adds header data (message type and static id)
@@ -383,10 +400,11 @@ fn sync_master_entities(
 fn delete_marked_slaves(
     networking: Res<NetworkingState>,
     mut commands: Commands,
-    query: Query<(Entity, &SynchronizedSlave)>
+    query: Query<(Entity, &SynchronizedSlave)>,
 ) {
-    if !networking.connected
-        { return; }
+    if !networking.connected {
+        return;
+    }
 
     for entity in query.iter() {
         if (entity.1.object_info & 0b10000000) != 0 {
@@ -398,10 +416,11 @@ fn delete_marked_slaves(
 fn delete_marked_masters(
     networking: Res<NetworkingState>,
     mut commands: Commands,
-    query: Query<(Entity, &SynchronizedMaster)>
+    query: Query<(Entity, &SynchronizedMaster)>,
 ) {
-    if !networking.connected
-        { return; }
+    if !networking.connected {
+        return;
+    }
 
     for entity in query.iter() {
         if (entity.1.object_info & 0b10000000) != 0 {
@@ -411,9 +430,7 @@ fn delete_marked_masters(
 }
 
 impl NetworkingState {
-    fn send_all_unreliable(
-        &self, bytes: Vec<u8>
-    ) {
+    fn send_all_unreliable(&self, bytes: Vec<u8>) {
         let networking = self.client.networking();
 
         for player in self.active_players.iter() {
@@ -421,14 +438,12 @@ impl NetworkingState {
         }
     }
 
-    fn send_all_reliable(
-        &self, bytes: Vec<u8>
-    ) {
-            let networking = self.client.networking();
+    fn send_all_reliable(&self, bytes: Vec<u8>) {
+        let networking = self.client.networking();
 
-            for player in self.active_players.iter() {
-                networking.send_p2p_packet(*player, SendType::Reliable, &bytes);
-            }
+        for player in self.active_players.iter() {
+            networking.send_p2p_packet(*player, SendType::Reliable, &bytes);
+        }
     }
 
     pub fn create_networked_entity(
@@ -437,16 +452,17 @@ impl NetworkingState {
         components: &[Box<impl Serializable>],
         entity: &Entity,
         sync_periodically: bool,
-        static_id: u16
+        static_id: u16,
     ) {
         let mut object_info: u8 = 0;
-        if sync_periodically { object_info |= 0b01000000; }
+        if sync_periodically {
+            object_info |= 0b01000000;
+        }
 
-        commands.entity(*entity)
-            .insert(SynchronizedMaster {
-                object_info,
-                static_id,
-            });
+        commands.entity(*entity).insert(SynchronizedMaster {
+            object_info,
+            static_id,
+        });
 
         let mut bytes: Vec<u8> = Vec::new();
 
@@ -454,7 +470,6 @@ impl NetworkingState {
         bytes.extend_from_slice(&static_id.to_le_bytes());
         bytes.push(object_info);
         bytes.push(components.len().try_into().unwrap());
-
 
         for component in components {
             let type_id = component.get_type_id().to_le_bytes();

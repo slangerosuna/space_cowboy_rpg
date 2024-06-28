@@ -109,12 +109,14 @@ impl PlayerTranscriber {
             return Err(OpenAIError::InvalidArgument("".to_string()));
         }
 
-        self.is_transcribing.store(true, std::sync::atomic::Ordering::Relaxed);
+        self.is_transcribing
+            .store(true, std::sync::atomic::Ordering::Relaxed);
 
         self.key_press_waiter
             .store(false, std::sync::atomic::Ordering::Relaxed);
 
-        self.transcribe_player_internal(open_ai, self.key_press_waiter.clone()).await
+        self.transcribe_player_internal(open_ai, self.key_press_waiter.clone())
+            .await
     }
 
     pub fn transcribe_player(&self, open_ai: &OpenAPI, rt: &RT) {
@@ -122,7 +124,8 @@ impl PlayerTranscriber {
             return;
         }
 
-        self.is_transcribing.store(true, std::sync::atomic::Ordering::Relaxed);
+        self.is_transcribing
+            .store(true, std::sync::atomic::Ordering::Relaxed);
         // safe because the OpenAPI resource is never dropped or kept as a mutable reference
         let open_ai = unsafe { std::mem::transmute::<&OpenAPI, &'static OpenAPI>(open_ai) };
         // safe as long as we ensure that there are no concurrent transcriptions, which we do
@@ -171,7 +174,8 @@ impl PlayerTranscriber {
     }
 
     pub fn is_transcribing(&self) -> bool {
-        self.is_transcribing.load(std::sync::atomic::Ordering::Relaxed)
+        self.is_transcribing
+            .load(std::sync::atomic::Ordering::Relaxed)
     }
 
     async fn transcribe_player_internal(
@@ -210,7 +214,8 @@ impl PlayerTranscriber {
         }
         drop(guard);
 
-        self.is_transcribing.store(false, std::sync::atomic::Ordering::Relaxed);
+        self.is_transcribing
+            .store(false, std::sync::atomic::Ordering::Relaxed);
 
         let buffer = Self::to_wav(&mut buffer);
 

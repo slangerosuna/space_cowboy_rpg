@@ -1,6 +1,8 @@
+use lazy_static::lazy_static;
 use rs_openai::chat::{ChatCompletionMessageRequestBuilder, CreateChatRequestBuilder, Role};
 use tokio::task::JoinHandle;
 
+use crate::ai::utils::prompt_template::PromptTemplate;
 use crate::ai::{persona::*, OpenAPI, PlayerTranscriber};
 use crate::utils::Rng;
 use crate::RT;
@@ -42,13 +44,23 @@ impl Persona {
         unsafe {
             let this = std::mem::transmute::<&Self, &'static Self>(self);
             let open_api = std::mem::transmute::<&OpenAPI, &'static OpenAPI>(open_api);
-            let player_transcriber = std::mem::transmute::<&PlayerTranscriber, &'static PlayerTranscriber>(player_transcriber);
+            let player_transcriber = std::mem::transmute::<
+                &PlayerTranscriber,
+                &'static PlayerTranscriber,
+            >(player_transcriber);
             let scratch = std::mem::transmute::<&Scratch, &'static Scratch>(scratch);
-            let associative = std::mem::transmute::<&AssociativeMemory, &'static AssociativeMemory>(associative);
+            let associative =
+                std::mem::transmute::<&AssociativeMemory, &'static AssociativeMemory>(associative);
             let rng = std::mem::transmute::<&Rng, &'static Rng>(rng);
 
             let mut guard = self.conversation_handler.handle.lock().unwrap();
-            *guard = Some(rt.0.spawn(this.converse_with_player(open_api, player_transcriber, scratch, associative, rng)));
+            *guard = Some(rt.0.spawn(this.converse_with_player(
+                open_api,
+                player_transcriber,
+                scratch,
+                associative,
+                rng,
+            )));
         }
     }
 
@@ -60,18 +72,56 @@ impl Persona {
         associative: &AssociativeMemory,
         rng: &Rng,
     ) {
-        let response = player_transcriber.transcribe_player_async(open_api).await.unwrap();
+        let response = player_transcriber
+            .transcribe_player_async(open_api)
+            .await
+            .unwrap();
 
         let req = CreateChatRequestBuilder::default()
             .model("gpt-3.5-turbo")
-            .messages(vec![ChatCompletionMessageRequestBuilder::default()
-                .role(Role::User)
-                .content(response)
-                .build().unwrap()])
-            .build().unwrap();
+            .messages(vec![
+                ChatCompletionMessageRequestBuilder::default()
+                    .role(Role::System)
+                    .content(self.format_who_i_am(scratch, rng))
+                    .build()
+                    .unwrap(),
+                ChatCompletionMessageRequestBuilder::default()
+                    .role(Role::User)
+                    .content(response)
+                    .build()
+                    .unwrap(),
+            ])
+            .build()
+            .unwrap();
 
         let response = open_api.client.chat().create(&req).await.unwrap();
 
-        self.voice.tts(&response.choices[0].message.content.as_str()).await.unwrap();
+        self.voice
+            .tts(&response.choices[0].message.content.as_str())
+            .await
+            .unwrap();
     }
+
+    fn format_who_i_am(&self, scratch: &Scratch, rng: &Rng) -> String {
+        WHO_I_AM.format(vec![
+            &self.name,
+            &self.age.to_string(),
+            &self.background,
+            &self.personality.as_string(),
+            &get_string(&self.traits),
+            &get_string(&self.ideals),
+            &get_string(&self.bonds),
+            &get_string(&self.flaws),
+            &scratch.get_random_gossip(rng).content,
+        ])
+    }
+}
+
+fn get_string(vec: &Vec<String>) -> String {
+    vec[..].iter().fold(String::new(), |acc, s| acc + s + ", ")
+}
+
+lazy_static! {
+    static ref WHO_I_AM: PromptTemplate =
+        PromptTemplate::load_file("resources/prompt_templates/who_i_am.txt");
 }

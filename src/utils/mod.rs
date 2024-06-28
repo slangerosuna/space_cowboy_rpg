@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use std::time::SystemTime;
 
+pub mod one_shot_registry;
 mod rng;
+pub use one_shot_registry::*;
 pub use rng::*;
 
 pub struct UtilPlugin;

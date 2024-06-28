@@ -32,6 +32,11 @@ pub struct Persona {
     pub personality: Personality,
     pub voice: Voice,
 
+    pub traits: Vec<String>,
+    pub ideals: Vec<String>,
+    pub bonds: Vec<String>,
+    pub flaws: Vec<String>,
+
     #[serde(skip)]
     pub conversation_handler: ConversationHandler,
 }
@@ -50,16 +55,17 @@ impl Persona {
                 extraversion: 0.0,
                 agreeableness: 0.0,
                 neuroticism: 0.0,
-                traits: Vec::new(),
-                ideals: Vec::new(),
-                bonds: Vec::new(),
-                flaws: Vec::new(),
             },
-            voice: Voice { voice_id: "Clyde".to_string() },
+            traits: Vec::new(),
+            ideals: Vec::new(),
+            bonds: Vec::new(),
+            flaws: Vec::new(),
+            voice: Voice {
+                voice_id: "Clyde".to_string(),
+            },
             conversation_handler: ConversationHandler::default(),
         }
     }
-
 }
 #[derive(Serialize, Deserialize)]
 pub struct Personality {
@@ -68,9 +74,53 @@ pub struct Personality {
     pub extraversion: f32,
     pub agreeableness: f32,
     pub neuroticism: f32,
+}
 
-    pub traits: Vec<String>,
-    pub ideals: Vec<String>,
-    pub bonds: Vec<String>,
-    pub flaws: Vec<String>,
+fn trait_to_str(val: f32, low: &str, mid: &str, high: &str) -> String {
+    if val < 0.3 {
+        low.to_string()
+    } else if val < 0.7 {
+        mid.to_string()
+    } else {
+        high.to_string()
+    }
+}
+
+impl Personality {
+    fn as_string(&self) -> String {
+        let mut personality = String::new();
+
+        personality.push_str(&trait_to_str(
+            self.openness,
+            "closed-minded, ",
+            "",
+            "open-minded",
+        ));
+        personality.push_str(&trait_to_str(
+            self.conscientiousness,
+            "disorganized, ",
+            "",
+            "organized",
+        ));
+        personality.push_str(&trait_to_str(
+            self.extraversion,
+            "introverted, ",
+            "",
+            "extroverted",
+        ));
+        personality.push_str(&trait_to_str(
+            self.agreeableness,
+            "antagonistic, ",
+            "",
+            "agreeable",
+        ));
+        personality.push_str(&trait_to_str(
+            self.neuroticism,
+            "emotionally stable",
+            "",
+            "emotionally unstable",
+        ));
+
+        personality
+    }
 }
