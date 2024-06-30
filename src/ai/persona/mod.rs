@@ -2,14 +2,16 @@ use bevy::prelude::*;
 use cognitive_modules::converse::ConversationHandler;
 use serde::{Deserialize, Serialize};
 
-mod cognitive_modules;
+pub mod cognitive_modules;
 pub mod memory_structures;
-mod skills;
+pub mod skills;
 pub mod voice;
 
 use memory_structures::*;
 use skills::*;
 use voice::*;
+
+use crate::utils::Rng;
 
 pub fn simulate_day(
     mut persona_query: Query<(&mut Persona, &mut Scratch, &mut AssociativeMemory)>,
@@ -42,27 +44,31 @@ pub struct Persona {
 }
 
 impl Persona {
-    pub fn new() -> Self {
+    pub fn new(
+        name: String,
+        age: u32,
+        birthday: u32,
+        skills: Skills,
+        background: String,
+        personality: Personality,
+        voice: Voice,
+        traits: Vec<String>,
+        ideals: Vec<String>,
+        bonds: Vec<String>,
+        flaws: Vec<String>,
+    ) -> Self {
         Self {
-            name: String::new(),
-            age: 0,
-            birthday: 0,
-            skills: Skills::new(),
-            background: String::new(),
-            personality: Personality {
-                openness: 0.0,
-                conscientiousness: 0.0,
-                extraversion: 0.0,
-                agreeableness: 0.0,
-                neuroticism: 0.0,
-            },
-            traits: Vec::new(),
-            ideals: Vec::new(),
-            bonds: Vec::new(),
-            flaws: Vec::new(),
-            voice: Voice {
-                voice_id: "Clyde".to_string(),
-            },
+            name,
+            age,
+            birthday,
+            skills,
+            background,
+            personality,
+            voice,
+            traits,
+            ideals,
+            bonds,
+            flaws,
             conversation_handler: ConversationHandler::default(),
         }
     }
@@ -74,6 +80,37 @@ pub struct Personality {
     pub extraversion: f32,
     pub agreeableness: f32,
     pub neuroticism: f32,
+}
+
+impl Personality {
+    pub fn new(
+        openness: f32,
+        conscientiousness: f32,
+        extraversion: f32,
+        agreeableness: f32,
+        neuroticism: f32,
+    ) -> Self {
+        Self {
+            openness,
+            conscientiousness,
+            extraversion,
+            agreeableness,
+            neuroticism,
+        }
+    }
+
+    pub fn new_random(
+        rng: &Rng,
+    ) -> Self {
+        let mut series = rng.get_series();
+        Self {
+            openness: series.next().unwrap().f32(),
+            conscientiousness: series.next().unwrap().f32(),
+            extraversion: series.next().unwrap().f32(),
+            agreeableness: series.next().unwrap().f32(),
+            neuroticism: series.next().unwrap().f32(),
+        }
+    }
 }
 
 fn trait_to_str(val: f32, low: &str, mid: &str, high: &str) -> String {

@@ -36,6 +36,7 @@ fn main() {
     let runtime = Runtime::new().unwrap();
 
     App::new()
+        .add_systems(Startup, test)
         .insert_resource(RT(runtime))
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
@@ -47,4 +48,41 @@ fn main() {
         .run();
 
     std::process::exit(0);
+}
+
+fn test(
+    rt: Res<RT>,
+    rng: Res<utils::Rng>,
+    player_transcriber: Res<ai::utils::player_transcriber::PlayerTranscriber>,
+    open_api: Res<ai::OpenAPI>,
+) {
+    let persona = Box::new(ai::persona::Persona::new(
+        "Clyde".to_string(),
+        20,
+        0,
+        ai::persona::skills::Skills {
+            innate: vec![],
+            learned: vec![],
+        },
+        "Folk Hero".to_string(),
+        ai::persona::Personality::new_random(&rng),
+        ai::persona::voice::Voice { voice_id: "Clyde".to_string() },
+        vec!["easily bored".to_string()],
+        vec!["Respect".to_string()],
+        vec!["deeply attached to your home".to_string()],
+        vec!["sometimes too trusting".to_string()],
+    ));
+    let mut scratch = Box::new(ai::persona::memory_structures::Scratch::new());
+    scratch.add_gossip(ai::persona::memory_structures::Gossip {
+        content: "Rachel is a lesbian".to_string(),
+        interest: 0.5,
+    });
+
+    let associative = Box::new(ai::persona::memory_structures::AssociativeMemory::new());
+
+    persona.start_conversation_with_player(&open_api, &player_transcriber, &scratch, &associative, &rt, &rng);
+
+    std::mem::forget(persona);
+    std::mem::forget(scratch);
+    std::mem::forget(associative);
 }

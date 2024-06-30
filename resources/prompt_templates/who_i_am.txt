@@ -7,5 +7,4 @@
 # {6} - bonds
 # {7} - flaws
 # {8} - thinking about
-
 Your name is {0}, you are {1} years old and you were a {2}. You are {3}, {4}, {6}, {7}. You care deeply about {5}. Currently, you are thinking about how {8}.

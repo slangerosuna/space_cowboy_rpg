@@ -65,7 +65,7 @@ impl PromptTemplate {
 
     pub fn format(&self, args: Vec<&String>) -> String {
         let mut formatted = String::new();
-        for i in 0..self.text_sections.len() {
+        for i in 0..self.text_sections.len() - 1 {
             formatted.push_str(&self.text_sections[i]);
             formatted.push_str(&args[self.position_argument[i]])
         }

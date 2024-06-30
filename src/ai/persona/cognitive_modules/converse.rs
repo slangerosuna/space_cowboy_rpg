@@ -72,12 +72,7 @@ impl Persona {
         associative: &AssociativeMemory,
         rng: &Rng,
     ) {
-        let response = player_transcriber
-            .transcribe_player_async(open_api)
-            .await
-            .unwrap();
-
-        let req = CreateChatRequestBuilder::default()
+        let mut req = CreateChatRequestBuilder::default()
             .model("gpt-3.5-turbo")
             .messages(vec![
                 ChatCompletionMessageRequestBuilder::default()
@@ -85,21 +80,34 @@ impl Persona {
                     .content(self.format_who_i_am(scratch, rng))
                     .build()
                     .unwrap(),
-                ChatCompletionMessageRequestBuilder::default()
-                    .role(Role::User)
-                    .content(response)
-                    .build()
-                    .unwrap(),
             ])
             .build()
             .unwrap();
+        loop {
+            let response = player_transcriber
+                .transcribe_player_async(open_api)
+                .await
+                .unwrap();
 
-        let response = open_api.client.chat().create(&req).await.unwrap();
+            req.messages.push(ChatCompletionMessageRequestBuilder::default()
+                .role(Role::User)
+                .content(response)
+                .build()
+                .unwrap());
 
-        self.voice
-            .tts(&response.choices[0].message.content.as_str())
-            .await
-            .unwrap();
+            let response = open_api.client.chat().create(&req).await.unwrap();
+
+            req.messages.push(ChatCompletionMessageRequestBuilder::default()
+                .role(Role::Assistant)
+                .content(response.choices[0].message.content.clone())
+                .build()
+                .unwrap());
+
+            self.voice
+                .tts(&response.choices[0].message.content.as_str())
+                .await
+                .unwrap();
+        }
     }
 
     fn format_who_i_am(&self, scratch: &Scratch, rng: &Rng) -> String {
