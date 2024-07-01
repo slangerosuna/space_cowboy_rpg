@@ -74,13 +74,11 @@ impl Persona {
     ) {
         let mut req = CreateChatRequestBuilder::default()
             .model("gpt-3.5-turbo")
-            .messages(vec![
-                ChatCompletionMessageRequestBuilder::default()
-                    .role(Role::System)
-                    .content(self.format_who_i_am(scratch, rng))
-                    .build()
-                    .unwrap(),
-            ])
+            .messages(vec![ChatCompletionMessageRequestBuilder::default()
+                .role(Role::System)
+                .content(self.format_who_i_am(scratch, rng))
+                .build()
+                .unwrap()])
             .build()
             .unwrap();
         loop {
@@ -89,19 +87,23 @@ impl Persona {
                 .await
                 .unwrap();
 
-            req.messages.push(ChatCompletionMessageRequestBuilder::default()
-                .role(Role::User)
-                .content(response)
-                .build()
-                .unwrap());
+            req.messages.push(
+                ChatCompletionMessageRequestBuilder::default()
+                    .role(Role::User)
+                    .content(response)
+                    .build()
+                    .unwrap(),
+            );
 
             let response = open_api.client.chat().create(&req).await.unwrap();
 
-            req.messages.push(ChatCompletionMessageRequestBuilder::default()
-                .role(Role::Assistant)
-                .content(response.choices[0].message.content.clone())
-                .build()
-                .unwrap());
+            req.messages.push(
+                ChatCompletionMessageRequestBuilder::default()
+                    .role(Role::Assistant)
+                    .content(response.choices[0].message.content.clone())
+                    .build()
+                    .unwrap(),
+            );
 
             self.voice
                 .tts(&response.choices[0].message.content.as_str())

@@ -99,9 +99,7 @@ impl Personality {
         }
     }
 
-    pub fn new_random(
-        rng: &Rng,
-    ) -> Self {
+    pub fn new_random(rng: &Rng) -> Self {
         let mut series = rng.get_series();
         Self {
             openness: series.next().unwrap().f32(),

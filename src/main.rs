@@ -66,7 +66,9 @@ fn test(
         },
         "Folk Hero".to_string(),
         ai::persona::Personality::new_random(&rng),
-        ai::persona::voice::Voice { voice_id: "Clyde".to_string() },
+        ai::persona::voice::Voice {
+            voice_id: "Clyde".to_string(),
+        },
         vec!["easily bored".to_string()],
         vec!["Respect".to_string()],
         vec!["deeply attached to your home".to_string()],
@@ -80,7 +82,14 @@ fn test(
 
     let associative = Box::new(ai::persona::memory_structures::AssociativeMemory::new());
 
-    persona.start_conversation_with_player(&open_api, &player_transcriber, &scratch, &associative, &rt, &rng);
+    persona.start_conversation_with_player(
+        &open_api,
+        &player_transcriber,
+        &scratch,
+        &associative,
+        &rt,
+        &rng,
+    );
 
     std::mem::forget(persona);
     std::mem::forget(scratch);
