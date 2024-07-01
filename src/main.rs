@@ -36,7 +36,7 @@ fn main() {
     let runtime = Runtime::new().unwrap();
 
     App::new()
-        .add_systems(Startup, test)
+        //.add_systems(Startup, test)
         .insert_resource(RT(runtime))
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
