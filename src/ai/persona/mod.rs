@@ -6,8 +6,10 @@ pub mod cognitive_modules;
 pub mod memory_structures;
 pub mod skills;
 pub mod voice;
+mod persona_gen;
 
-use memory_structures::*;
+pub use persona_gen::*;
+pub use memory_structures::*;
 use skills::*;
 use voice::*;
 
@@ -26,6 +28,7 @@ pub fn simulate_day(
 
 #[derive(Component, Serialize, Deserialize)]
 pub struct Persona {
+    pub race: String,
     pub name: String,
     pub age: u32,
     pub birthday: u32,
@@ -45,6 +48,7 @@ pub struct Persona {
 
 impl Persona {
     pub fn new(
+        race: String,
         name: String,
         age: u32,
         birthday: u32,
@@ -58,6 +62,7 @@ impl Persona {
         flaws: Vec<String>,
     ) -> Self {
         Self {
+            race,
             name,
             age,
             birthday,

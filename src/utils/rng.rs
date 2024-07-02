@@ -35,12 +35,12 @@ impl Rng {
         self.next() % 2 == 0
     }
 
-    pub fn get_series(&self) -> Box<dyn Iterator<Item = Rng>> {
+    pub fn get_series(&self) -> impl Iterator<Item = Rng> {
         let mut clone = self.clone();
-        Box::new(std::iter::from_fn(move || {
+        std::iter::from_fn(move || {
             clone.mutate_state();
             Some(clone.clone())
-        }))
+        })
     }
 }
 

@@ -123,6 +123,7 @@ impl Persona {
             &get_string(&self.bonds),
             &get_string(&self.flaws),
             &scratch.get_random_gossip(rng).content,
+            &self.race,
         ])
     }
 }

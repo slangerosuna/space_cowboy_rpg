@@ -1,0 +1,15 @@
+Human
+Cyborg
+Robot
+High Elf
+Wood Elf
+Astral Elf
+High Half Elf
+Wood Half Elf
+Astral Half Elf
+Orc
+Half-Orc
+Dwarf
+Plasmoid
+Reptoid
+Mantoid

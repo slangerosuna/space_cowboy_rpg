@@ -28,8 +28,10 @@ struct Config {
 }
 
 fn main() {
-    let config: Config = toml::from_str(include_str!("../config.toml")).unwrap();
+    let config = std::fs::read_to_string("config.toml").unwrap();
+    let config: Config = toml::from_str(&config).unwrap();
     unsafe {
+        // This is safe because it is called before any other threads are spawned
         set_var("ELEVEN_API_KEY", config.elevenlabs_key.as_str());
     }
 
@@ -57,6 +59,7 @@ fn test(
     open_api: Res<ai::OpenAPI>,
 ) {
     let persona = Box::new(ai::persona::Persona::new(
+        "Human".to_string(),
         "Clyde".to_string(),
         20,
         0,
