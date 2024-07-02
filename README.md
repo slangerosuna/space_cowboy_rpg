@@ -2,7 +2,7 @@
 
 ## inspiration
 
-The primary inspirations to this project are Skyrim, DND, Doug Doug's [babadaboosh](https://github.com/DougDougGithub/Babagaboosh.git), Joon Sung et. al.'s [Generative Agents: Interactive Simulacra of Human Behavior](https://github.com/joonspk-research/generative_agents), and my friends TTRPG setting.
+The primary inspirations to this project are Skyrim, DND, Doug Doug's [babagaboosh](https://github.com/DougDougGithub/Babagaboosh.git), Joon Sung et. al.'s [Generative Agents: Interactive Simulacra of Human Behavior](https://github.com/joonspk-research/generative_agents), and my friends TTRPG setting.
 
 ## build
 
