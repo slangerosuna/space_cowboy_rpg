@@ -3,3 +3,5 @@
 Cargo.lock
 config.toml
 resources/word2vec.bin
+.cargo
+.replit
