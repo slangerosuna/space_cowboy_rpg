@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+
 use bevy::prelude::Component;
 use serde::{Deserialize, Serialize};
 
@@ -10,12 +12,12 @@ lazy_static! {
 }
 
 const MIN_ASSOCIATIVE_STRENGTH: f32 = 0.9;
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct ConceptNode {
     pub word: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Association {
     // concept 1 must be one word
     pub concept1: ConceptNode,
@@ -26,24 +28,24 @@ pub struct Association {
 
 #[derive(Serialize, Deserialize, Component)]
 pub struct AssociativeMemory {
-    pub associations: Vec<Association>,
+    pub associations: Mutex<Vec<Association>>,
 }
 
 impl AssociativeMemory {
     pub fn new() -> Self {
         Self {
-            associations: Vec::new(),
+            associations: Mutex::new(Vec::new()),
         }
     }
 
-    pub fn add_association(&mut self, association: Association) {
-        self.associations.push(association);
+    pub fn add_association(&self, association: Association) {
+        self.associations.lock().unwrap().push(association);
     }
 
-    pub fn get_association(&self, concept: &ConceptNode) -> Option<Vec<&Association>> {
+    pub fn get_association(&self, concept: &ConceptNode) -> Option<Vec<Association>> {
         let concept_vec = WORD2VEC.get_vector(&concept.word)?;
         Some(
-            self.associations
+            self.associations.lock().unwrap()
                 .iter()
                 .filter_map(|a| {
                     if Self::get_associative_strength_with_already_loaded_vectors(
@@ -60,6 +62,7 @@ impl AssociativeMemory {
                         None
                     }
                 })
+                .map(|a| (*a).clone())
                 .collect(),
         )
     }
@@ -77,6 +80,8 @@ impl AssociativeMemory {
 
         let memory_association = self
             .associations
+            .lock()
+            .unwrap()
             .iter()
             .filter_map(|a| {
                 let a_concept1_vec = WORD2VEC.get_vector(&a.concept1.word)?;

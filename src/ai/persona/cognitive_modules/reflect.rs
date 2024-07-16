@@ -1,7 +1,7 @@
 use crate::ai::persona::Persona;
 
 impl Persona {
-    pub fn reflect(&mut self) {
+    pub fn reflect(&self) {
         unimplemented!() //TODO: Implement
     }
 }

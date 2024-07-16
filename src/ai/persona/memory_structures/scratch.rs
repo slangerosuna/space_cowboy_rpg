@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+
 use super::super::cognitive_modules::Plan;
 use super::{Association, AssociativeMemory, ConceptNode};
 use crate::utils::Rng;
@@ -9,8 +11,8 @@ pub struct Scratch {
     pub att_bandwidth: f32,
     pub retention: f32,
     pub gossip_threshold: f32,
-    pub daily_plan: Plan,
-    pub gossip: Vec<Gossip>,
+    pub daily_plan: Mutex<Plan>,
+    pub gossip: Mutex<Vec<Gossip>>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -45,35 +47,36 @@ impl Scratch {
             att_bandwidth: 3.0,
             retention: 5.0,
             gossip_threshold: 0.5,
-            daily_plan: Plan::new(),
-            gossip: Vec::new(),
+            daily_plan: Mutex::new(Plan::new()),
+            gossip: Mutex::new(Vec::new()),
         }
     }
 
-    pub fn add_gossip(&mut self, gossip: Gossip) {
-        self.gossip.push(gossip);
+    pub fn add_gossip(&self, gossip: Gossip) {
+        self.gossip.lock().unwrap().push(gossip);
     }
 
-    pub fn get_random_gossip(&self, rng: &Rng) -> &Gossip {
-        self.gossip.get(rng.range(0, self.gossip.len())).unwrap()
+    pub fn get_random_gossip(&self, rng: &Rng) -> Gossip {
+        let guard = self.gossip.lock().unwrap();
+        guard.get(rng.range(0, guard.len())).unwrap().clone()
     }
 
-    pub fn forget_gossip(&mut self, rng: &Rng) {
+    pub fn forget_gossip(&self, rng: &Rng) {
         let mut series = rng.get_series();
-        self.gossip
+        self.gossip.lock().unwrap()
             .retain(|g| g.interest > 1.0 / self.retention - series.next().unwrap().f32() * 0.1);
     }
 
-    pub fn fade_gossip(&mut self, rng: &Rng) {
+    pub fn fade_gossip(&self, rng: &Rng) {
         let mut series = rng.get_series();
-        self.gossip
+        self.gossip.lock().unwrap()
             .iter_mut()
             .for_each(|g| g.interest -= series.next().unwrap().f32() * 0.1);
     }
 
-    pub fn store_to_memory(&self, memory: &mut AssociativeMemory, rng: &Rng) {
+    pub fn store_to_memory(&self, memory: &AssociativeMemory, rng: &Rng) {
         let mut series = rng.get_series();
-        self.gossip
+        self.gossip.lock().unwrap()
             .iter()
             .filter(|g| g.interest > 1.0 / self.retention - series.next().unwrap().f32() * 0.3)
             .map(|g| g.to_association())

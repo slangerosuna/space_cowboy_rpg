@@ -1,7 +1,7 @@
 use crate::ai::persona::Persona;
 
 impl Persona {
-    pub fn perceive(&mut self) {
+    pub fn perceive(&self) {
         unimplemented!() //TODO: Implement
     }
 }

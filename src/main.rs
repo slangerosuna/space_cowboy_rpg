@@ -18,7 +18,7 @@ use ai::AiPlugin;
 use rpg::RPGPlugin;
 use utils::UtilPlugin;
 
-#[derive(Resource)]
+#[derive(Resource, Deref)]
 pub struct RT(Runtime);
 
 #[derive(Serialize, Deserialize)]
