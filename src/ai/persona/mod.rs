@@ -4,12 +4,12 @@ use serde::{Deserialize, Serialize};
 
 pub mod cognitive_modules;
 pub mod memory_structures;
+mod persona_gen;
 pub mod skills;
 pub mod voice;
-mod persona_gen;
 
-pub use persona_gen::*;
 pub use memory_structures::*;
+pub use persona_gen::*;
 use skills::*;
 use voice::*;
 
