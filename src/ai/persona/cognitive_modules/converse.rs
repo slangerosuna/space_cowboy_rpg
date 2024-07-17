@@ -14,11 +14,7 @@ pub struct ConversationHandler {
 }
 
 impl Persona {
-    pub fn converse_with_persona(
-        self_scratch: &Scratch,
-        other_scratch: &Scratch,
-        rng: &Rng,
-    ) {
+    pub fn converse_with_persona(self_scratch: &Scratch, other_scratch: &Scratch, rng: &Rng) {
         let gossip = self_scratch.get_random_gossip(rng);
         if gossip.interest > self_scratch.gossip_threshold {
             other_scratch.add_gossip(gossip);

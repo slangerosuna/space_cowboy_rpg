@@ -45,7 +45,9 @@ impl AssociativeMemory {
     pub fn get_association(&self, concept: &ConceptNode) -> Option<Vec<Association>> {
         let concept_vec = WORD2VEC.get_vector(&concept.word)?;
         Some(
-            self.associations.lock().unwrap()
+            self.associations
+                .lock()
+                .unwrap()
                 .iter()
                 .filter_map(|a| {
                     if Self::get_associative_strength_with_already_loaded_vectors(

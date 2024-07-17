@@ -168,5 +168,5 @@ impl RPG {
 pub struct RPGPlugin;
 
 impl Plugin for RPGPlugin {
-    fn build(&self, app: &mut App) {}
+    fn build(&self, _app: &mut App) {}
 }

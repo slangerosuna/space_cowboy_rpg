@@ -77,7 +77,7 @@ fn test(
         vec!["deeply attached to your home".to_string()],
         vec!["sometimes too trusting".to_string()],
     ));
-    let mut scratch = Box::new(ai::persona::memory_structures::Scratch::new());
+    let scratch = Box::new(ai::persona::memory_structures::Scratch::new());
     scratch.add_gossip(ai::persona::memory_structures::Gossip {
         content: "Rachel is a lesbian".to_string(),
         interest: 0.5,

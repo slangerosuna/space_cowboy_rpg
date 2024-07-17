@@ -9,17 +9,16 @@ pub mod skills;
 pub mod voice;
 
 pub use memory_structures::*;
-pub use persona_gen::*;
 use skills::*;
 use voice::*;
 
 use crate::utils::Rng;
 
 pub fn simulate_day(
-    mut persona_query: Query<(&Persona, &Scratch, &AssociativeMemory)>,
-    mut rng: ResMut<crate::utils::Rng>,
+    persona_query: Query<(&Persona, &Scratch, &AssociativeMemory)>,
+    rng: Res<crate::utils::Rng>,
 ) {
-    for (persona, scratch, associative_memory) in persona_query.iter_mut() {
+    for (persona, scratch, associative_memory) in persona_query.iter() {
         scratch.forget_gossip(&rng);
         scratch.fade_gossip(&rng);
         scratch.store_to_memory(&associative_memory, &rng);
