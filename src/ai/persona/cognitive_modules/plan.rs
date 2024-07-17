@@ -29,7 +29,7 @@ impl Task {
 }
 
 impl Persona {
-    pub fn plan(&mut self) {
+    pub fn plan(&self) {
         unimplemented!() //TODO: Implement
     }
 }

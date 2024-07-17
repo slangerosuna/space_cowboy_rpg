@@ -128,13 +128,13 @@ impl PlayerTranscriber {
             .store(true, std::sync::atomic::Ordering::Relaxed);
         // safe because the OpenAPI resource is never dropped or kept as a mutable reference
         let open_ai = unsafe { std::mem::transmute::<&OpenAPI, &'static OpenAPI>(open_ai) };
-        // safe as long as we ensure that there are no concurrent transcriptions, which we do
+        // safe as long as we ensure that there is no mutable reference to self, and that the reference isn't dropped before the task is finished
         let this = unsafe { std::mem::transmute::<&Self, &'static Self>(self) };
         self.key_press_waiter
             .store(false, std::sync::atomic::Ordering::Relaxed);
 
         let transcribe_player_handle = Some(
-            rt.0.spawn(this.transcribe_player_internal(open_ai, this.key_press_waiter.clone())),
+            rt.spawn(this.transcribe_player_internal(open_ai, this.key_press_waiter.clone())),
         );
 
         let mut guard = self.transcribe_player_handle.lock().unwrap();

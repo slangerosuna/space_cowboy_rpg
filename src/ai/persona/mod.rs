@@ -16,13 +16,13 @@ use voice::*;
 use crate::utils::Rng;
 
 pub fn simulate_day(
-    mut persona_query: Query<(&mut Persona, &mut Scratch, &mut AssociativeMemory)>,
+    mut persona_query: Query<(&Persona, &Scratch, &AssociativeMemory)>,
     mut rng: ResMut<crate::utils::Rng>,
 ) {
-    for (persona, mut scratch, mut associative_memory) in persona_query.iter_mut() {
-        scratch.forget_gossip(&mut rng);
-        scratch.fade_gossip(&mut rng);
-        scratch.store_to_memory(&mut associative_memory, &mut rng);
+    for (persona, scratch, associative_memory) in persona_query.iter_mut() {
+        scratch.forget_gossip(&rng);
+        scratch.fade_gossip(&rng);
+        scratch.store_to_memory(&associative_memory, &rng);
     }
 }
 

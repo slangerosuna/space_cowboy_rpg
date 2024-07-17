@@ -15,19 +15,17 @@ pub struct ConversationHandler {
 
 impl Persona {
     pub fn converse_with_persona(
-        self_scratch: &mut Scratch,
-        other_scratch: &mut Scratch,
-        rng: &mut Rng,
+        self_scratch: &Scratch,
+        other_scratch: &Scratch,
+        rng: &Rng,
     ) {
         let gossip = self_scratch.get_random_gossip(rng);
         if gossip.interest > self_scratch.gossip_threshold {
-            let gossip = (*gossip).clone();
             other_scratch.add_gossip(gossip);
         }
 
         let gossip = other_scratch.get_random_gossip(rng);
         if gossip.interest > other_scratch.gossip_threshold {
-            let gossip = (*gossip).clone();
             self_scratch.add_gossip(gossip);
         }
     }
@@ -54,7 +52,7 @@ impl Persona {
             let rng = std::mem::transmute::<&Rng, &'static Rng>(rng);
 
             let mut guard = self.conversation_handler.handle.lock().unwrap();
-            *guard = Some(rt.0.spawn(this.converse_with_player(
+            *guard = Some(rt.spawn(this.converse_with_player(
                 open_api,
                 player_transcriber,
                 scratch,
