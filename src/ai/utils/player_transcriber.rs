@@ -133,9 +133,8 @@ impl PlayerTranscriber {
         self.key_press_waiter
             .store(false, std::sync::atomic::Ordering::Relaxed);
 
-        let transcribe_player_handle = Some(
-            rt.spawn(this.transcribe_player_internal(open_ai, this.key_press_waiter.clone())),
-        );
+        let transcribe_player_handle =
+            Some(rt.spawn(this.transcribe_player_internal(open_ai, this.key_press_waiter.clone())));
 
         let mut guard = self.transcribe_player_handle.lock().unwrap();
         *guard = transcribe_player_handle;

@@ -203,9 +203,9 @@ where
 pub struct SynchronizedSlave {
     object_info: u8, /*First bit marks whether or not to delete,
                       *Second bit marks whether to sync periodically,
+                      *Third bit marks whether or not to destroy on owner disconnect
                       */
     static_id: u16,
-    destroy_on_owner_disconnect: bool,
     owner: u16,
 }
 
@@ -213,6 +213,7 @@ pub struct SynchronizedSlave {
 pub struct SynchronizedMaster {
     object_info: u8, /*First bit marks whether or not to delete,
                       *Second bit marks whether to sync periodically,
+                      *Third bit marks whether or not to destroy on owner disconnect
                       */
     static_id: u16,
 }

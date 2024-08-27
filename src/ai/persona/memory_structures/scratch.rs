@@ -63,20 +63,26 @@ impl Scratch {
 
     pub fn forget_gossip(&self, rng: &Rng) {
         let mut series = rng.get_series();
-        self.gossip.lock().unwrap()
+        self.gossip
+            .lock()
+            .unwrap()
             .retain(|g| g.interest > 1.0 / self.retention - series.next().unwrap().f32() * 0.1);
     }
 
     pub fn fade_gossip(&self, rng: &Rng) {
         let mut series = rng.get_series();
-        self.gossip.lock().unwrap()
+        self.gossip
+            .lock()
+            .unwrap()
             .iter_mut()
             .for_each(|g| g.interest -= series.next().unwrap().f32() * 0.1);
     }
 
     pub fn store_to_memory(&self, memory: &AssociativeMemory, rng: &Rng) {
         let mut series = rng.get_series();
-        self.gossip.lock().unwrap()
+        self.gossip
+            .lock()
+            .unwrap()
             .iter()
             .filter(|g| g.interest > 1.0 / self.retention - series.next().unwrap().f32() * 0.3)
             .map(|g| g.to_association())

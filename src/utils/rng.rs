@@ -42,6 +42,11 @@ impl Rng {
             Some(clone.clone())
         })
     }
+
+    pub fn choose<'a, T>(&self, items: &'a [T]) -> &'a T {
+        let index = self.next() % items.len();
+        &items[index]
+    }
 }
 
 pub fn rng_system(mut rng: ResMut<Rng>) {
