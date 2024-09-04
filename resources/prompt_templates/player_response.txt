@@ -1,0 +1,4 @@
+# {0} - What the player said
+# {1} - Associations from the player's statement
+The player said "{0}".
+{1}

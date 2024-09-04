@@ -1,0 +1,3 @@
+# {0} - The thing queried
+# {1} - The response
+The associations related to the word "{0}" are: {1}

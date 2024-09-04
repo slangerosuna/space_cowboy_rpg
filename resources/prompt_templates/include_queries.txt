@@ -1,0 +1,1 @@
+You have two options for each response: you can either query your long-term memory to add context you need to response. You can only query associations of SINGLE WORDS, you can NOT query associations of sentences. your queries can only be in the form of `QUERY:[the word you want to query]`. If you already have sufficient context to respond, respond without querying.

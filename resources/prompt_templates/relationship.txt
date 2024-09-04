@@ -1,0 +1,2 @@
+# {0} - Relationship
+You are the player's {0}.

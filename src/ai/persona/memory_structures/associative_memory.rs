@@ -1,13 +1,13 @@
 use std::sync::Mutex;
 
-use bevy::prelude::Component;
+use bevy::{prelude::Component, text};
 use serde::{Deserialize, Serialize};
 
 use lazy_static::lazy_static;
 use word2vec::wordvectors::WordVector;
 
 lazy_static! {
-    pub static ref WORD2VEC: WordVector =
+    static ref WORD2VEC: WordVector =
         WordVector::load_from_binary("resources/word2vec.bin").unwrap();
 }
 
@@ -134,5 +134,30 @@ impl AssociativeMemory {
             sum += concept1_vec[i] * concept2_vec[i];
         }
         return sum;
+    }
+}
+use std::collections::HashSet;
+lazy_static! {
+    static ref IGNORABLE: HashSet<&'static str> =
+        include_str!("ignore_associations.txt").lines().collect();
+}
+impl AssociativeMemory {   
+    fn find_association_in_text(
+        &self,
+        text: &str,
+    ) -> Vec<Association> {
+        let tokens = text.split_whitespace().filter(|t| !IGNORABLE.contains(t));
+        let mut associations: Vec<Association> = Vec::new();
+
+        for token in tokens {
+            let concept = ConceptNode {
+                word: token.to_string(),
+            };
+            if let Some(associations_with_concept) = self.get_association(&concept) {
+                associations.extend(associations_with_concept);
+            }
+        }
+
+        associations
     }
 }
