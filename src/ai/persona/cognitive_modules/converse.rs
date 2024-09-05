@@ -1,3 +1,4 @@
+use bevy_rapier3d::na::coordinates::X;
 use lazy_static::lazy_static;
 use rs_openai::chat::{ChatCompletionMessageRequestBuilder, CreateChatRequestBuilder, Role};
 use tokio::task::JoinHandle;
@@ -78,7 +79,13 @@ impl Persona {
                     INCLUDE_QUERIES.format(vec![]),
                     RELATIONSHIP.format(vec![&scratch.relationship.clone().into()]),
                     self.format_who_i_am(scratch, rng),
-                    get_string(&associative.find_association_in_text("player").iter().map(|a| a.clone().into()).collect())
+                    get_string(
+                        &associative
+                            .find_association_in_text("player")
+                            .iter()
+                            .map(|a| a.clone().into())
+                            .collect()
+                    )
                 ))
                 .build()
                 .unwrap()])
@@ -116,11 +123,27 @@ impl Persona {
 
                 let response = response.choices[0].message.content.as_str();
 
+                macro_rules! vocalize {
+                    () => {
+                        //remove words in all caps
+                        let response = response
+                            .split_ascii_whitespace()
+                            .filter(|s| !s.chars().all(char::is_uppercase))
+                            .collect::<Vec<&str>>()
+                            .join(" ");
+
+                        self.voice.tts(response.as_str()).await.unwrap();
+                    };
+                }
+
                 match response {
                     x if x.contains("QUERY:") => {
                         let query = response.split(":").collect::<Vec<&str>>()[1].trim();
                         let response = associative.find_association_in_text(query);
-                        let response = QUERY_RESPONSE.format(vec![&query.to_string(), &get_string(&response.iter().map(|a| a.clone().into()).collect())]);
+                        let response = QUERY_RESPONSE.format(vec![
+                            &query.to_string(),
+                            &get_string(&response.iter().map(|a| a.clone().into()).collect()),
+                        ]);
                         req.messages.push(
                             ChatCompletionMessageRequestBuilder::default()
                                 .role(Role::System)
@@ -130,15 +153,15 @@ impl Persona {
                         );
 
                         continue 'b;
-                    },
+                    }
+                    x if x.contains("END") => {
+                        vocalize!();
+                        break 'a;
+                    }
                     _ => {
-                        //remove words in all caps
-                        let response = response.split_ascii_whitespace().filter(|s| !s.chars().all(char::is_uppercase)).collect::<Vec<&str>>().join(" ");
-
-                        self.voice.tts(response.as_str()).await.unwrap();
-                        if response.contains("END") { break 'a; }
+                        vocalize!();
                         break 'b;
-                    },
+                    }
                 };
             }
         }
