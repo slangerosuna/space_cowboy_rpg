@@ -70,7 +70,14 @@ impl Persona {
             .model("gpt-3.5-turbo")
             .messages(vec![ChatCompletionMessageRequestBuilder::default()
                 .role(Role::System)
-                .content(self.format_who_i_am(scratch, rng))
+                .content(format!(
+                    "{}\n{}\n{}\n{}\n{}",
+                    APPROPRIATE_CONTEXT.format(vec![]),
+                    EMOTIONAL_EXPRESSION.format(vec![]),
+                    INCLUDE_QUERIES.format(vec![]),
+                    RELATIONSHIP.format(vec![&scratch.relationship.clone().into()]),
+                    self.format_who_i_am(scratch, rng),
+                ))
                 .build()
                 .unwrap()])
             .build()
@@ -81,6 +88,11 @@ impl Persona {
                 .await
                 .unwrap();
 
+            let associations = associative.find_association_in_text(&response);
+            let associations = get_string(&associations.iter().map(|a| a.clone().into()).collect());
+
+            let response = PLAYER_RESPONSE.format(vec![&response, &associations]);
+
             req.messages.push(
                 ChatCompletionMessageRequestBuilder::default()
                     .role(Role::User)
@@ -89,20 +101,37 @@ impl Persona {
                     .unwrap(),
             );
 
-            let response = open_api.client.chat().create(&req).await.unwrap();
+            loop {
+                let response = open_api.client.chat().create(&req).await.unwrap();
 
-            req.messages.push(
-                ChatCompletionMessageRequestBuilder::default()
-                    .role(Role::Assistant)
-                    .content(response.choices[0].message.content.clone())
-                    .build()
-                    .unwrap(),
-            );
+                req.messages.push(
+                    ChatCompletionMessageRequestBuilder::default()
+                        .role(Role::Assistant)
+                        .content(response.choices[0].message.content.clone())
+                        .build()
+                        .unwrap(),
+                );
 
-            self.voice
-                .tts(&response.choices[0].message.content.as_str())
-                .await
-                .unwrap();
+                let response = response.choices[0].message.content.as_str();
+
+                if response.contains("QUERY:") {
+                    let query = response.split(":").collect::<Vec<&str>>()[1].trim();
+                    let response = associative.find_association_in_text(query);
+                    let response = QUERY_RESPONSE.format(vec![&query.to_string(), &get_string(&response.iter().map(|a| a.clone().into()).collect())]);
+                    req.messages.push(
+                        ChatCompletionMessageRequestBuilder::default()
+                            .role(Role::System)
+                            .content(response)
+                            .build()
+                            .unwrap(),
+                    );
+
+                    continue;
+                }
+
+                self.voice.tts(response).await.unwrap();
+                break;
+            }
         }
     }
 
@@ -127,6 +156,18 @@ fn get_string(vec: &Vec<String>) -> String {
 }
 
 lazy_static! {
+    static ref APPROPRIATE_CONTEXT: PromptTemplate =
+        PromptTemplate::load_file("resources/prompt_templates/appropriate_context.txt");
+    static ref EMOTIONAL_EXPRESSION: PromptTemplate =
+        PromptTemplate::load_file("resources/prompt_templates/emotional_expression.txt");
+    static ref INCLUDE_QUERIES: PromptTemplate =
+        PromptTemplate::load_file("resources/prompt_templates/include_queries.txt");
+    static ref PLAYER_RESPONSE: PromptTemplate =
+        PromptTemplate::load_file("resources/prompt_templates/player_response.txt");
+    static ref QUERY_RESPONSE: PromptTemplate =
+        PromptTemplate::load_file("resources/prompt_templates/query_response.txt");
+    static ref RELATIONSHIP: PromptTemplate =
+        PromptTemplate::load_file("resources/prompt_templates/relationship.txt");
     static ref WHO_I_AM: PromptTemplate =
         PromptTemplate::load_file("resources/prompt_templates/who_i_am.txt");
 }

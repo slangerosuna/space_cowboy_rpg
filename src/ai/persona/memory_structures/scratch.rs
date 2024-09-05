@@ -6,6 +6,54 @@ use crate::utils::Rng;
 use bevy::prelude::Component;
 use serde::{Deserialize, Serialize};
 
+#[repr(u8)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
+pub enum Relationship {
+    Friend,
+    Foe,
+    Stranger,
+    Acquaintance,
+    SignificantOther,
+    Paramour,
+    Spouse,
+    Sibling,
+    Parent,
+    Child,
+    Grandparent,
+    Grandchild,
+    Aunt,
+    Uncle,
+    Niece,
+    Nephew,
+    Cousin,
+    InLaw,
+}
+
+impl Into<String> for Relationship {
+    fn into(self) -> String {
+        match self {
+            Relationship::Friend => "Friend".to_string(),
+            Relationship::Foe => "Foe".to_string(),
+            Relationship::Stranger => "Stranger".to_string(),
+            Relationship::Acquaintance => "Acquaintance".to_string(),
+            Relationship::SignificantOther => "Significant Other".to_string(),
+            Relationship::Paramour => "Paramour".to_string(),
+            Relationship::Spouse => "Spouse".to_string(),
+            Relationship::Sibling => "Sibling".to_string(),
+            Relationship::Parent => "Parent".to_string(),
+            Relationship::Child => "Child".to_string(),
+            Relationship::Grandparent => "Grandparent".to_string(),
+            Relationship::Grandchild => "Grandchild".to_string(),
+            Relationship::Aunt => "Aunt".to_string(),
+            Relationship::Uncle => "Uncle".to_string(),
+            Relationship::Niece => "Niece".to_string(),
+            Relationship::Nephew => "Nephew".to_string(),
+            Relationship::Cousin => "Cousin".to_string(),
+            Relationship::InLaw => "In Law".to_string(),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Component)]
 pub struct Scratch {
     pub att_bandwidth: f32,
@@ -13,6 +61,7 @@ pub struct Scratch {
     pub gossip_threshold: f32,
     pub daily_plan: Mutex<Plan>,
     pub gossip: Mutex<Vec<Gossip>>,
+    pub relationship: Relationship,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -49,6 +98,7 @@ impl Scratch {
             gossip_threshold: 0.5,
             daily_plan: Mutex::new(Plan::new()),
             gossip: Mutex::new(Vec::new()),
+            relationship: Relationship::Stranger,
         }
     }
 

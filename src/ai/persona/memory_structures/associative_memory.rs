@@ -26,6 +26,22 @@ pub struct Association {
     pub strength: f32,
 }
 
+impl Into<String> for Association {
+    fn into(self) -> String {
+        format!(
+            "You associate \"{}\" with \"{}\" {}",
+            self.concept1.word,
+            self.concept2.word,
+            match self.strength {
+                x if x > 0.9 => "very strongly",
+                x if x > 0.7 => "strongly",
+                x if x > 0.5 => "moderately",
+                _ => "weakly",
+            }
+        )
+    }
+}
+
 #[derive(Serialize, Deserialize, Component)]
 pub struct AssociativeMemory {
     pub associations: Mutex<Vec<Association>>,
@@ -141,11 +157,8 @@ lazy_static! {
     static ref IGNORABLE: HashSet<&'static str> =
         include_str!("ignore_associations.txt").lines().collect();
 }
-impl AssociativeMemory {   
-    fn find_association_in_text(
-        &self,
-        text: &str,
-    ) -> Vec<Association> {
+impl AssociativeMemory {
+    pub fn find_association_in_text(&self, text: &str) -> Vec<Association> {
         let tokens = text.split_whitespace().filter(|t| !IGNORABLE.contains(t));
         let mut associations: Vec<Association> = Vec::new();
 
