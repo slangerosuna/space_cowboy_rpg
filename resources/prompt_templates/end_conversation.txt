@@ -1,0 +1,1 @@
+When you deem the conversation to be over, either say "END" to indicate that the player's message was last, or append "END" to the end of your message

@@ -71,18 +71,20 @@ impl Persona {
             .messages(vec![ChatCompletionMessageRequestBuilder::default()
                 .role(Role::System)
                 .content(format!(
-                    "{}\n{}\n{}\n{}\n{}",
+                    "{}\n{}\n{}\n{}\n{}\n{}\n{}",
                     APPROPRIATE_CONTEXT.format(vec![]),
                     EMOTIONAL_EXPRESSION.format(vec![]),
+                    END_CONVERSATION.format(vec![]),
                     INCLUDE_QUERIES.format(vec![]),
                     RELATIONSHIP.format(vec![&scratch.relationship.clone().into()]),
                     self.format_who_i_am(scratch, rng),
+                    get_string(&associative.find_association_in_text("player").iter().map(|a| a.clone().into()).collect())
                 ))
                 .build()
                 .unwrap()])
             .build()
             .unwrap();
-        loop {
+        'a: loop {
             let response = player_transcriber
                 .transcribe_player_async(open_api)
                 .await
@@ -101,7 +103,7 @@ impl Persona {
                     .unwrap(),
             );
 
-            loop {
+            'b: loop {
                 let response = open_api.client.chat().create(&req).await.unwrap();
 
                 req.messages.push(
@@ -114,23 +116,30 @@ impl Persona {
 
                 let response = response.choices[0].message.content.as_str();
 
-                if response.contains("QUERY:") {
-                    let query = response.split(":").collect::<Vec<&str>>()[1].trim();
-                    let response = associative.find_association_in_text(query);
-                    let response = QUERY_RESPONSE.format(vec![&query.to_string(), &get_string(&response.iter().map(|a| a.clone().into()).collect())]);
-                    req.messages.push(
-                        ChatCompletionMessageRequestBuilder::default()
-                            .role(Role::System)
-                            .content(response)
-                            .build()
-                            .unwrap(),
-                    );
+                match response {
+                    x if x.contains("QUERY:") => {
+                        let query = response.split(":").collect::<Vec<&str>>()[1].trim();
+                        let response = associative.find_association_in_text(query);
+                        let response = QUERY_RESPONSE.format(vec![&query.to_string(), &get_string(&response.iter().map(|a| a.clone().into()).collect())]);
+                        req.messages.push(
+                            ChatCompletionMessageRequestBuilder::default()
+                                .role(Role::System)
+                                .content(response)
+                                .build()
+                                .unwrap(),
+                        );
 
-                    continue;
-                }
+                        continue 'b;
+                    },
+                    _ => {
+                        //remove words in all caps
+                        let response = response.split_ascii_whitespace().filter(|s| !s.chars().all(char::is_uppercase)).collect::<Vec<&str>>().join(" ");
 
-                self.voice.tts(response).await.unwrap();
-                break;
+                        self.voice.tts(response.as_str()).await.unwrap();
+                        if response.contains("END") { break 'a; }
+                        break 'b;
+                    },
+                };
             }
         }
     }
@@ -160,6 +169,8 @@ lazy_static! {
         PromptTemplate::load_file("resources/prompt_templates/appropriate_context.txt");
     static ref EMOTIONAL_EXPRESSION: PromptTemplate =
         PromptTemplate::load_file("resources/prompt_templates/emotional_expression.txt");
+    static ref END_CONVERSATION: PromptTemplate =
+        PromptTemplate::load_file("resources/prompt_templates/end_conversation.txt");
     static ref INCLUDE_QUERIES: PromptTemplate =
         PromptTemplate::load_file("resources/prompt_templates/include_queries.txt");
     static ref PLAYER_RESPONSE: PromptTemplate =
