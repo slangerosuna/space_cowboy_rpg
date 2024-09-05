@@ -1,4 +1,3 @@
-use bevy_rapier3d::na::coordinates::X;
 use lazy_static::lazy_static;
 use rs_openai::chat::{ChatCompletionMessageRequestBuilder, CreateChatRequestBuilder, Role};
 use tokio::task::JoinHandle;
@@ -187,21 +186,20 @@ fn get_string(vec: &Vec<String>) -> String {
     vec[..].iter().fold(String::new(), |acc, s| acc + s + ", ")
 }
 
+const PROMPT_TEMPLATES_PATH: &str = "resources/prompt_templates/";
+
 lazy_static! {
-    static ref APPROPRIATE_CONTEXT: PromptTemplate =
-        PromptTemplate::load_file("resources/prompt_templates/appropriate_context.txt");
-    static ref EMOTIONAL_EXPRESSION: PromptTemplate =
-        PromptTemplate::load_file("resources/prompt_templates/emotional_expression.txt");
-    static ref END_CONVERSATION: PromptTemplate =
-        PromptTemplate::load_file("resources/prompt_templates/end_conversation.txt");
-    static ref INCLUDE_QUERIES: PromptTemplate =
-        PromptTemplate::load_file("resources/prompt_templates/include_queries.txt");
-    static ref PLAYER_RESPONSE: PromptTemplate =
-        PromptTemplate::load_file("resources/prompt_templates/player_response.txt");
-    static ref QUERY_RESPONSE: PromptTemplate =
-        PromptTemplate::load_file("resources/prompt_templates/query_response.txt");
-    static ref RELATIONSHIP: PromptTemplate =
-        PromptTemplate::load_file("resources/prompt_templates/relationship.txt");
-    static ref WHO_I_AM: PromptTemplate =
-        PromptTemplate::load_file("resources/prompt_templates/who_i_am.txt");
+    static ref APPROPRIATE_CONTEXT: PromptTemplate = load_prompt_template("appropriate_context.txt");
+    static ref EMOTIONAL_EXPRESSION: PromptTemplate = load_prompt_template("emotional_expression.txt");
+    static ref END_CONVERSATION: PromptTemplate = load_prompt_template("end_conversation.txt");
+    static ref INCLUDE_QUERIES: PromptTemplate = load_prompt_template("include_queries.txt");
+    static ref PLAYER_RESPONSE: PromptTemplate = load_prompt_template("player_response.txt");
+    static ref QUERY_RESPONSE: PromptTemplate = load_prompt_template("query_response.txt");
+    static ref RELATIONSHIP: PromptTemplate = load_prompt_template("relationship.txt");
+    static ref WHO_I_AM: PromptTemplate = load_prompt_template("who_i_am.txt");
+}
+
+fn load_prompt_template(file_name: &str) -> PromptTemplate {
+    let path = format!("{}{}", PROMPT_TEMPLATES_PATH, file_name);
+    PromptTemplate::load_file(&path)
 }
