@@ -154,12 +154,16 @@ impl AssociativeMemory {
 }
 use std::collections::HashSet;
 lazy_static! {
-    static ref IGNORABLE: HashSet<&'static str> =
-        include_str!("ignore_associations.txt").lines().collect();
+    static ref IGNORABLE: HashSet<String> =
+        std::fs::read_to_string("resources/misc/ignorable.txt")
+            .unwrap()
+            .lines()
+            .map(|s| s.to_string())
+            .collect();
 }
 impl AssociativeMemory {
     pub fn find_association_in_text(&self, text: &str) -> Vec<Association> {
-        let tokens = text.split_whitespace().filter(|t| !IGNORABLE.contains(t));
+        let tokens = text.split_whitespace().filter(|t| !IGNORABLE.contains(*t));
         let mut associations: Vec<Association> = Vec::new();
 
         for token in tokens {
